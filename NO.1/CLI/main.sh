@@ -201,20 +201,8 @@ az network lb inbound-nat-rule create \
 	--backend-port 3389
 
 
-# 현재 제대로 적용 안됨.backendIpConfigurations 에 값이 들어가야함
-#az network lb address-pool address add \
-#	-g $RgName \
-#	--lb-name $ELB01Name \
-#	--pool-name $ELB01BkPool01 \
-#	-n $ELB01PIP \
-#	--vnet $Vnet01Name \
-#	--ip-address $VM01IP
-
 #VM에 IIS 설치
-# 아래 명령어 입력 시 에러 발생
-# 에러 문구 : Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
-# 이에 따라 Windows 환경이 아닌 Linux 환경에서 작업 진행함
-# 환경 전환 : Windows 10 -> Azure Cloud Shell(Bash)
+
 az vm extension set \
 	--publisher Microsoft.Compute \
 	--version 1.8 \
@@ -235,19 +223,19 @@ az vm extension set \
 
 #ELB 백엔드 풀에 VM 추가
 az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM01Nic \
-    --ip-config-name $VM01ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
-
+	--resource-group $RgName \
+	--nic-name $VM01Nic \
+	--ip-config-name $VM01ipconfig \
+	--lb-name $ELB01Name \
+	--address-pool $ELB01BkPool01
+#처음 백엔드 풀 생성 시에 Vnet 연결안해도 nic으로 연결하면 붙음
 
 az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM02Nic \
-    --ip-config-name $VM02ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
+	--resource-group $RgName \
+	--nic-name $VM02Nic \
+	--ip-config-name $VM02ipconfig \
+	--lb-name $ELB01Name \
+	--address-pool $ELB01BkPool01
 
 
 #ELB 인바운드 NAT 규칙 설정
