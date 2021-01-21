@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# 자원 변수 지정
+# 자원명
 RgName="Hands-On-1-RG"
 Location="eastus"
 Vnet01Name="Hands-On-1-VNet01"
@@ -166,23 +166,6 @@ az network lb probe create \
     --port 80
 
 
-#ELB 백엔드 풀에 VM 추가
-az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM01Nic \
-    --ip-config-name $VM01ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
-
-
-az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM02Nic \
-    --ip-config-name $VM02ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
-
-
 #ELB 부하 분산 규칙 생성
 az network lb rule create \
     --resource-group $RgName \
@@ -194,7 +177,7 @@ az network lb rule create \
     --frontend-ip-name LoadBalancerFrontEnd \
     --backend-pool-name $ELB01BkPool01 \
     --probe-name $ELB01HTTPProbe \
-    --idle-timeout 15
+    --idle-timeout 4
 
 
 #ELB 인바운드 NAT 규칙 생성
@@ -216,23 +199,6 @@ az network lb inbound-nat-rule create \
 	--protocol Tcp \
 	--frontend-port 30002 \
 	--backend-port 3389
-
-
-#ELB 인바운드 NAT 규칙 설정
-az network nic ip-config inbound-nat-rule add \
-	--resource-group $RgName \
-	--nic-name $VM01Nic \
-	--ip-config-name $VM01ipconfig \
-	--lb-name $ELB01Name \
-	--inbound-nat-rule $ELB01NAT01
-
-
-az network nic ip-config inbound-nat-rule add \
-	--resource-group $RgName \
-	--nic-name $VM02Nic \
-	--ip-config-name $VM02ipconfig \
-	--lb-name $ELB01Name \
-	--inbound-nat-rule $ELB01NAT02
 
 
 # 현재 제대로 적용 안됨.backendIpConfigurations 에 값이 들어가야함
@@ -267,6 +233,40 @@ az vm extension set \
 	--settings '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}'
 
 
+#ELB 백엔드 풀에 VM 추가
+az network nic ip-config address-pool add \
+    --resource-group $RgName \
+    --nic-name $VM01Nic \
+    --ip-config-name $VM01ipconfig \
+    --lb-name $ELB01Name \
+    --address-pool $ELB01BkPool01
+
+
+az network nic ip-config address-pool add \
+    --resource-group $RgName \
+    --nic-name $VM02Nic \
+    --ip-config-name $VM02ipconfig \
+    --lb-name $ELB01Name \
+    --address-pool $ELB01BkPool01
+
+
+#ELB 인바운드 NAT 규칙 설정
+az network nic ip-config inbound-nat-rule add \
+	--resource-group $RgName \
+	--nic-name $VM01Nic \
+	--ip-config-name $VM01ipconfig \
+	--lb-name $ELB01Name \
+	--inbound-nat-rule $ELB01NAT01
+
+
+az network nic ip-config inbound-nat-rule add \
+	--resource-group $RgName \
+	--nic-name $VM02Nic \
+	--ip-config-name $VM02ipconfig \
+	--lb-name $ELB01Name \
+	--inbound-nat-rule $ELB01NAT02
+
+
 #ELB Public IP 확인
 az network public-ip show \
 	-g $RgName \
@@ -278,3 +278,4 @@ az network public-ip show \
 # mstsc ELB Public IP:30001
 # ID=azureuser
 # PW=Azurexptmxm123
+
