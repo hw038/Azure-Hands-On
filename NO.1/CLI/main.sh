@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# 자원명
+# 자원 변수 지정
 RgName="Hands-On-1-RG"
 Location="eastus"
 Vnet01Name="Hands-On-1-VNet01"
