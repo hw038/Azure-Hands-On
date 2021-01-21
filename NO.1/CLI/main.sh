@@ -1,5 +1,3 @@
-```bash
-
 #!/bin/sh
 
 # 자원명
@@ -280,5 +278,3 @@ az network public-ip show \
 # mstsc ELB Public IP:30001
 # ID=azureuser
 # PW=Azurexptmxm123
-
-```
