@@ -1,24 +1,24 @@
 #!/bin/sh
 
-# 자원 변수 지정
-RgName="Hands-On-1-RG"
+# 자원명
+RgName="Hands-On-2-RG"
 Location="eastus"
-Vnet01Name="Hands-On-1-VNet01"
-Subnet01Name="Hands-On-1-Subnet01"
-NSG01Name="Hands-On-1-NSG01"
-ELB01Name="Hands-On-1-ELB01"
+Vnet01Name="Hands-On-2-VNet01"
+Subnet01Name="Hands-On-2-Subnet01"
+NSG01Name="Hands-On-2-NSG01"
+ELB01Name="Hands-On-2-ELB01"
 ELB01PIP="ELB01PIP"
 ELB01BkPool01="ELB01BackPool01"
 ELB01HTTPProbe="Health80Probe"
 ELB01NAT01="VM01RDP"
 ELB01NAT02="VM02RDP"
-VM01Name="Hands-On-1-VM01"
-VM01Nic="Hands-On-1-VM01VMNic"
-VM01ipconfig="ipconfigHands-On-1-VM01"
-VM02Name="Hands-On-1-VM02"
-VM02Nic="Hands-On-1-VM02VMNic"
-VM02ipconfig="ipconfigHands-On-1-VM02"
-VMAvSet01Name="AvSet01"
+VMSSName="Hands-On-2-VMSS"
+VM01Name="Hands-On-2-VM01"
+VM01Nic="Hands-On-2-VM01VMNic"
+VM01ipconfig="ipconfigHands-On-2-VM01"
+VM02Name="Hands-On-2-VM02"
+VM02Nic="Hands-On-2-VM02VMNic"
+VM02ipconfig="ipconfigHands-On-2-VM02"
 VM01IP="10.1.0.4"
 VM02IP="10.1.0.5"
 Pw="Azurexptmxm123"
@@ -97,49 +97,6 @@ az network vnet subnet update \
   --network-security-group $NSG01Name
 
 
-#VM AvSet 생성
-az vm availability-set create \
-	-n $VMAvSet01Name \
-	-g $RgName \
-	--platform-fault-domain-count 2 \
-	--platform-update-domain-count 5
-
-
-#VM 만들기
-az vm create \
-	--resource-group $RgName \
-	--location $Location \
-	--name $VM01Name \
-	--vnet-name $Vnet01Name \
-	--subnet $Subnet01Name \
-	--nsg $NSG01Name \
-	--private-ip-address $VM01IP \
-	--public-ip-sku Standard \
-	--public-ip-address-allocation static \
-	--availability-set $VMAvSet01Name \
-	--image win2016datacenter \
-	--admin-username azureuser \
-	--admin-password $Pw \
-	--no-wait
-
-
-az vm create \
-	--resource-group $RgName \
-	--location $Location \
-	--name $VM02Name \
-	--vnet-name $Vnet01Name \
-	--subnet $Subnet01Name \
-	--nsg $NSG01Name \
-	--private-ip-address $VM02IP \
-	--public-ip-sku Standard \
-	--public-ip-address-allocation static \
-	--availability-set $VMAvSet01Name \
-	--image win2016datacenter \
-	--admin-username azureuser \
-	--admin-password $Pw \
-	--no-wait
-
-
 #ELB PIP 생성
 az network public-ip create \
     --resource-group $RgName \
@@ -147,15 +104,24 @@ az network public-ip create \
     --sku Standard \
     --zone 1
 
-
-#ELB 생성
-az network lb create \
-    --resource-group $RgName \
-    --name $ELB01Name \
-    --sku Standard \
-    --public-ip-address $ELB01PIP \
-    --backend-pool-name $ELB01BkPool01
-
+#VMSS 생성
+az vmss create \
+	--name $VMSSName \
+	-g $RgName \
+	--lb $ELB01Name \
+	--vnet-name $Vnet01Name \
+	--subnet $Subnet01Name \
+	--admin-username azureuser \
+	--admin-password $Pw \
+	--image win2016datacenter \
+	--public-ip-address $ELB01PIP \
+	--backend-pool-name $ELB01BkPool01 \
+	--lb-nat-pool-name "ELB01VMSSNAT" \
+	--lb-sku Standard \
+	--nsg $NSG01Name
+#lb-nat-pool-name 옵션은 vmss 생성 시 새로 생성하는 LB에만 적용가능하다.
+#vmss 신규 생성 시 기존 LB를 연결할 때는 --lb-nat-pool-name을 사용할 수 없다.
+#위 사유 때문에 VMSS Hands-On의 경우 ELB보다 VMSS를 먼저 만든다.
 
 #ELB 상태 프로브 만들기
 az network lb probe create \
@@ -166,115 +132,47 @@ az network lb probe create \
     --port 80
 
 
-#ELB 백엔드 풀에 VM 추가
-az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM01Nic \
-    --ip-config-name $VM01ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
-
-
-az network nic ip-config address-pool add \
-    --resource-group $RgName \
-    --nic-name $VM02Nic \
-    --ip-config-name $VM02ipconfig \
-    --lb-name $ELB01Name \
-    --address-pool $ELB01BkPool01
-
-
 #ELB 부하 분산 규칙 생성
-az network lb rule create \
+az network lb rule update \
     --resource-group $RgName \
     --lb-name $ELB01Name \
-    --name HTTPRule \
+    --name LBRule \
     --protocol tcp \
     --frontend-port 80 \
     --backend-port 80 \
     --frontend-ip-name LoadBalancerFrontEnd \
     --backend-pool-name $ELB01BkPool01 \
     --probe-name $ELB01HTTPProbe \
-    --idle-timeout 15
+    --idle-timeout 4
 
 
-#ELB 인바운드 NAT 규칙 생성
-az network lb inbound-nat-rule create \
-	--resource-group $RgName \
-	--frontend-ip-name LoadBalancerFrontEnd \
-	--lb-name $ELB01Name \
-	--name $ELB01NAT01 \
-	--protocol Tcp \
-	--frontend-port 30001 \
-	--backend-port 3389
-
-
-az network lb inbound-nat-rule create \
-	--resource-group $RgName \
-	--frontend-ip-name LoadBalancerFrontEnd \
-	--lb-name $ELB01Name \
-	--name $ELB01NAT02 \
-	--protocol Tcp \
-	--frontend-port 30002 \
-	--backend-port 3389
-
-
-#ELB 인바운드 NAT 규칙 설정
-az network nic ip-config inbound-nat-rule add \
-	--resource-group $RgName \
-	--nic-name $VM01Nic \
-	--ip-config-name $VM01ipconfig \
-	--lb-name $ELB01Name \
-	--inbound-nat-rule $ELB01NAT01
-
-
-az network nic ip-config inbound-nat-rule add \
-	--resource-group $RgName \
-	--nic-name $VM02Nic \
-	--ip-config-name $VM02ipconfig \
-	--lb-name $ELB01Name \
-	--inbound-nat-rule $ELB01NAT02
-
-
-# 현재 제대로 적용 안됨.backendIpConfigurations 에 값이 들어가야함
-#az network lb address-pool address add \
-#	-g $RgName \
-#	--lb-name $ELB01Name \
-#	--pool-name $ELB01BkPool01 \
-#	-n $ELB01PIP \
-#	--vnet $Vnet01Name \
-#	--ip-address $VM01IP
-
-#VM에 IIS 설치
-# 아래 명령어 입력 시 에러 발생
-# 에러 문구 : Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
-# 이에 따라 Windows 환경이 아닌 Linux 환경에서 작업 진행함
-# 환경 전환 : Windows 10 -> Azure Cloud Shell(Bash)
-az vm extension set \
+#VMSS에 IIS 설치
+az vmss extension set \
 	--publisher Microsoft.Compute \
 	--version 1.8 \
 	--name CustomScriptExtension \
-	--vm-name $VM01Name \
+	--vmss-name $VMSSName \
 	--resource-group $RgName \
 	--settings '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}'
+#VM과는 다르게 정상 설치가 안됨
+#해결
+# VM에 RDP 통해 들어가서 PowerShell 연 후 아래 명령어 입력
+#Add-WindowsFeature Web-Server; powershell Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)
+# 
 
+#VMSS 인스턴스 보기
+az vmss list-instances \
+  --resource-group Hands-On-2-RG \
+  --name Hands-On-2-VMSS \
+  --output table
 
-az vm extension set \
-	--publisher Microsoft.Compute \
-	--version 1.8 \
-	--name CustomScriptExtension \
-	--vm-name $VM02Name \
-	--resource-group $RgName \
-	--settings '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}'
-
-
-#ELB Public IP 확인
-az network public-ip show \
-	-g $RgName \
-	-n $ELB01PIP \
-	--query [ipAddress] \
-	-o tsv
+#연결 정보 나열
+az vmss list-instance-connection-info \
+  --resource-group Hands-On-2-RG \
+  --name Hands-On-2-VMSS
 
 #접속 확인
 # mstsc ELB Public IP:30001
 # ID=azureuser
 # PW=Azurexptmxm123
+
