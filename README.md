@@ -7,3 +7,11 @@ Azure Hands-On
 2. Azure CLI와 PowerShell로 스크립트 작성(최대한 자동화 목표)
 3. Terraform을 이용해 완전 자동화
 
+
+
+
+인용문
+
+>이런것
+
+
