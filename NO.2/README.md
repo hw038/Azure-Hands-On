@@ -12,7 +12,7 @@
 - Public IP는 외부에서는 서비스를 이용하기 위한 주소이고, 내부적으로는 RDP와 같은 관리자용 접근 또한 가능하게 한다.
 
 2. VMSS에서 Instance를 Scale Out할 때, 장단점
- - ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8f56f0c1-21a9-4884-86c8-a2743d839b2b/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8f56f0c1-21a9-4884-86c8-a2743d839b2b/Untitled.png)
+ - ![alt text](https://www.notion.so/No-2-Scale-Set-4cad96c4bd164c42b2427fa5cfd56230#7d2f06a19f6d40469ead7f0084e9d8dd)
   * 장점
    + 수평적 확산으로 지속적인 확장이 가능하고 분산 처리로 인해 장애 시에도 전면 장애의 가능성이 낮다.
   * 단점
