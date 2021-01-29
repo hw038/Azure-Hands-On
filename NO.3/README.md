@@ -10,7 +10,7 @@
     - 외부와의 접속을 차단하고 내부 망으로만 운영 시에 사용한다.
     - Subnet02를 DB등과 같이 중요 자원을 배치하면 보안성이 높아질 것으로 보인다.
     - 예시
-    ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f946921f-6b9b-475a-9d26-f2b1b4cb1cf5/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f946921f-6b9b-475a-9d26-f2b1b4cb1cf5/Untitled.png)
+    ![alt text](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f946921f-6b9b-475a-9d26-f2b1b4cb1cf5/Untitled.png)
 2. Subnet01과 Subnet02의 직접 통신은 차단한다.
     - ILB를 통해 접속
 3. Subnet01의 가상 머신은 InternalLB01을 통해서만 Subnet02와 통신한다.
