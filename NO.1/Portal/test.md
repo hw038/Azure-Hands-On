@@ -1,5 +1,5 @@
 1. 리소스 그룹 생성
-:)
+:+1:
     ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ef7e4d65-5995-4431-9c7f-3e7db6a4911d/Untitled.png]
 
 2. 가상 네트워크 생성
