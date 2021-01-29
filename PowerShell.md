@@ -8,6 +8,8 @@
    
 스크립트 언어(CLI, PowerShell)로 작성한 경우 서로 성격이 다르기 때문에 똑같은 방식으로 처리할 수 없음
 
+## 참고 레퍼런스
+[링크](https://docs.microsoft.com/en-us/powershell/azure/?view=azps-5.4.0)
 
 ## PowerShell 버전 확인
 
