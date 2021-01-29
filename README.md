@@ -7,7 +7,10 @@ Azure Hands-On
 2. Azure CLI와 PowerShell로 스크립트 작성(최대한 자동화 목표)
 3. Terraform을 이용해 완전 자동화
 
-
+### 언어 사용 리뷰
+#### [CLI](https://github.com/hw038/Azure-Hands-On/blob/main/CLI.md)
+#### [PowerShell](https://github.com/hw038/Azure-Hands-On/blob/main/PowerShell.md)
+#### [Terrform](https://github.com/hw038/Azure-Hands-On/blob/main/Terraform.md)
 
 ***
 ### [Hands-On No.1](https://github.com/hw038/Azure-Hands-On/tree/main/NO.1)
