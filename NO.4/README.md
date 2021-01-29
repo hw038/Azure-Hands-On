@@ -5,3 +5,40 @@
 - Azure PowerShell (100%)
 - Terraform (0%)
 
+## 학습 목표
+- 참고 자료 : [link](https://docs.microsoft.com/ko-kr/azure/virtual-network/tutorial-create-route-table-portal#route-traffic-through-an-nva)
+- Peering을 사용하여 두 가상 네트워크를 연결한다.
+
+    Peering을 각 VM의 IP 그대로 손쉽게 연결이 가능하다.
+
+    마이크로소프트 백본 인프라를 통해 라우팅하므로 공용 인터넷 사용하지 않음
+    데이터 규제가 엄격한 경우 유용하다.
+
+- 연결된 가상 네트워크에서 Route Table을 사용하여 특정 Appliance로 트래픽을 전달한다.
+
+    Route Table 을 사용하는 이유
+
+    - Bastion 이전에 JumpBox를 사용한 것과 마찬가지로 Peering 이전에 레거시 환경에서 Route Table을 이용해 폐쇄망에 접속할 수 있다.
+    - 하지만 Route Table의 경우 같은 가상 네트워크 내에 있는 서브넷-서브넷 간에 트래픽을 라우팅하는 역할을 수행한다.
+    - NVA를 방화벽으로 두고 사용할 경우 보안이 높다.
+
+    같은 가상 네트워크 내에 서브넷간 통신에 사용 시
+
+    ![alt text](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/3bd87936-35bf-4824-a3f0-0ab2b2296d75/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210129%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210129T012705Z&X-Amz-Expires=86400&X-Amz-Signature=6ab346c3468efd80e2f9cfe7d339fd7751a26b81df8bb75a8bbdcd950fa22d71&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
+
+    첫 번째 홉은 10.0.2.4이고 NVA의 개인 IP 주소임을 알 수 있습니다. 두 번째 홉은 myVmPrivate VM의 개인 IP 주소입니다. 10.0.1.4에 있습니다. 이전에 경로를 myRouteTablePublic 경로 테이블에 추가하여 공용 서브넷에 연결했습니다. 이에 따라 Azure에서 NVA를 통해 트래픽을 보냈지만, 프라이빗 서브넷으로는 직접 보내지 않았습니다.
+
+    궁금
+
+    - VNet간 Route Table로 통신이 되는지?
+        - 안됨
+        - HUb & Spoke 방식에 대해서 더 찾아볼 필요 있음
+    - Route Table 적용 조건
+        - 같은 VNet 상에서 다른 서브넷간 통신 시 사용
+
+    확인 방법
+
+    - VM→네트워크→NIC→유효 경로
+## 주의 사항
+1. VMSS를 LB하기 위해서는 LB가 기본이 아닌 표준이여야함
+ - VMSS 만들면서 부하 분산 장치 생성하면 연결 가능
