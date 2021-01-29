@@ -10,12 +10,12 @@ Azure Hands-On
 
 
 ***
-### Hands-On No.1
+### Hands-On No.1(https://github.com/hw038/Azure-Hands-On/tree/main/NO.1)
 ***
 Azure의 External LB를 이용해 이중화 및 NAT 구성
 
 ***
-### Hands-On No.2
+### Hands-On No.2(https://github.com/hw038/Azure-Hands-On/tree/main/NO.2)
 ***
 Azure의 VM Scale Set와 External LB를 이용해 고가용성 및 부하 분산 기능 수행
 
