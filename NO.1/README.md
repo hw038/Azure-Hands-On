@@ -3,7 +3,7 @@
 - Azure Portal (100%)
 - Azure CLI (100%)
 - Azure PowerShell (100%)
-- Terraform (0%)
+- Terraform (100%)
    
 ## 학습 목표
 1. External Loadbalancer에 대한 Port Forwarding 설정 방법을 알아본다.
