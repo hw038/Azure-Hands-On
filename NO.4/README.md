@@ -23,7 +23,7 @@
     
     같은 가상 네트워크 내에 서브넷간 통신에 사용 시
 
-    ![alt text](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/3bd87936-35bf-4824-a3f0-0ab2b2296d75/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210129%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210129T012705Z&X-Amz-Expires=86400&X-Amz-Signature=6ab346c3468efd80e2f9cfe7d339fd7751a26b81df8bb75a8bbdcd950fa22d71&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
+    ![alt text](/NO.4/image/NO.4_같은_가상_네트워크_내_서브넷간_통신.png)
 
     첫 번째 홉은 10.0.2.4이고 NVA의 개인 IP 주소임을 알 수 있습니다. 두 번째 홉은 myVmPrivate VM의 개인 IP 주소입니다. 10.0.1.4에 있습니다. 이전에 경로를 myRouteTablePublic 경로 테이블에 추가하여 공용 서브넷에 연결했습니다. 이에 따라 Azure에서 NVA를 통해 트래픽을 보냈지만, 프라이빗 서브넷으로는 직접 보내지 않고 NVA를 통해 전달된다.
 
