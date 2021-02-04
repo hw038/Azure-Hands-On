@@ -15,7 +15,7 @@
 
 2. VMSS에서 Instance를 Scale Out할 때, 장단점
 
-    ![alt text](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/8f56f0c1-21a9-4884-86c8-a2743d839b2b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210129%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210129T012535Z&X-Amz-Expires=86400&X-Amz-Signature=2fc315bfda8878a4f41510c65a3455a86c91e328582cf221ef073fc6e2e0392e&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)  
+    ![스케일_업_아웃_](./imgae/NO.2_스케일_업_아웃_비교.png)  
 
     - 장점
 
