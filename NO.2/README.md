@@ -15,7 +15,7 @@
 
 2. VMSS에서 Instance를 Scale Out할 때, 장단점
 
-    ![image](/image/NO.2_스케일_업_아웃_비교.png)
+    ![image](/NO.2/image/NO.2_스케일_업_아웃_비교.png)
 
     - 장점
 
