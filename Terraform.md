@@ -12,7 +12,9 @@
 ## 참고 레퍼런스
 [링크](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
 
-## ![terraform 설치](https://www.terraform.io/downloads.html)   
+## terraform 설치
+
+[링크](https://www.terraform.io/downloads.html)   
    
 작업 환경에 맞는 terraform 설치
 
