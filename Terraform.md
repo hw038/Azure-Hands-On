@@ -1,13 +1,13 @@
 
 
-# PowerShell   
+# Terraform   
    
 모든 구성에는 여러 가지 방법이 존재한다.
 예 1) VM을 생성하면서 ELB, NSG, VNet, Subnet 등을 같이 생성
 예 2) ELB, NSG, VNet, Subnet 등의 자원을 먼저 생성한 후 VM을 생성하면서 기 생성된 자원들에 연결
 예 3) 예 2를 하고나서 제대로 연결되지 않는 부분들은 추후 수정
    
-스크립트 언어(CLI, PowerShell)로 작성한 경우 서로 성격이 다르기 때문에 똑같은 방식으로 처리할 수 없음
+테라폼은 현상 유지라는 점에서 앞선 CLI, PowerShell과는 확연히 다르다.
 
 ## 참고 레퍼런스
 [링크](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
