@@ -7,7 +7,7 @@ $ELB01Name="Hands-On-2-ELB01"
 $ELB01PIP="ELB01PIP"
 $ELB01BkPool01="ELB01BackPool01"
 $ELB01HTTPProbe="Health80Probe"
-$ELB01Rule="Hands-On-2-ELB0180"
+$ELB01Rule="Hands-On-2-80"
 $ELB01NAT01="VMSSRDP"
 $VMSSName="Hands-On-2-VMSS"
 $ID="azureuser"
@@ -43,10 +43,10 @@ New-AzVmss `
 
 
 # 상태 프로브 생성
-$StrELB = Get-AzLoadBalancer -Name $ELB01Name
+$StrELB = Get-AzLoadBalancer -Name $ELB01Name -ResourceGroupName $RgName
 $Probe = Add-AzLoadBalancerProbeConfig -Name $ELB01HTTPProbe -LoadBalancer $StrELB -Protocol "http" -Port 80 -IntervalInSeconds 15 -ProbeCount 2 -RequestPath /
 $Probe = Get-AzLoadBalancerProbeConfig -Name $ELB01HTTPProbe -LoadBalancer $StrELB
-slb = Set-AzLoadBalancerRuleConfig `
+Set-AzLoadBalancerRuleConfig `
 	-LoadBalancer $StrELB `
 	-Name $ELB01Rule `
 	-Probe $Probe `
@@ -55,7 +55,7 @@ slb = Set-AzLoadBalancerRuleConfig `
 	-FrontendPort 80 `
 	-BackendPort 80 `
 	-BackendAddressPool $backendAddressPool
-slb | Set-AzLoadBalancer
+Set-AzLoadBalancer -LoadBalancer $StrELB
 
 #LB Rule에 상태 프로브 연결
 
@@ -63,9 +63,10 @@ $vmss = Get-AzVmss `
             -ResourceGroupName $RgName `
             -VMScaleSetName $VMSSName
 
-$hostname = "$"+"env"+":"+"computername"
+$hostname = "$"+"("+"$"+"env"+":"+"computername"+")"
+$path = '"'+"C:\inetpub\wwwroot\Default.htm"+'"'
 $settings = @{
-          commandToExecute = "powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path C:\inetpub\wwwrot\Default.htm -Value $hostname"
+          commandToExecute = "powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path $path -Value $hostname"
         }
 
 Add-AzVmssExtension `
@@ -76,10 +77,12 @@ Add-AzVmssExtension `
 	-TypeHandlerVersion 1.8 `
 	-Setting $settings
 
+
 Update-AzVmss `
     -ResourceGroupName $RgName `
     -Name $VMSSName `
-    -VirtualMachineScaleSet $vmss
+    -VirtualMachineScaleSet $vmss `
+    -AsJob
 
 # 인스턴스 확인용
 #Get-AzVmssVM -ResourceGroupName $RgName -VMScaleSetName $VMSSName -InstanceId "3"
