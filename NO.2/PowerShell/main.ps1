@@ -31,6 +31,7 @@ $Credential = New-Object System.Management.Automation.PSCredential ($ID, $PW);
 
 New-AzVmss `
   -ResourceGroupName $RgName `
+  -UpgradePolicyMode "Automatic" `
   -VMScaleSetName $VMSSName `
   -Location $Location `
   -VirtualNetworkName $Vnet01Name `
@@ -45,7 +46,7 @@ New-AzVmss `
 $StrELB = Get-AzLoadBalancer -Name $ELB01Name
 $Probe = Add-AzLoadBalancerProbeConfig -Name $ELB01HTTPProbe -LoadBalancer $StrELB -Protocol "http" -Port 80 -IntervalInSeconds 15 -ProbeCount 2 -RequestPath /
 $Probe = Get-AzLoadBalancerProbeConfig -Name $ELB01HTTPProbe -LoadBalancer $StrELB
-Set-AzLoadBalancerRuleConfig `
+slb = Set-AzLoadBalancerRuleConfig `
 	-LoadBalancer $StrELB `
 	-Name $ELB01Rule `
 	-Probe $Probe `
@@ -54,7 +55,7 @@ Set-AzLoadBalancerRuleConfig `
 	-FrontendPort 80 `
 	-BackendPort 80 `
 	-BackendAddressPool $backendAddressPool
-Set-AzLoadBalancer -LoadBalancer $StrELB
+slb | Set-AzLoadBalancer
 
 #LB Rule에 상태 프로브 연결
 
@@ -62,15 +63,18 @@ $vmss = Get-AzVmss `
             -ResourceGroupName $RgName `
             -VMScaleSetName $VMSSName
 
+$hostname = "$"+"env"+":"+"computername"
+$settings = @{
+          commandToExecute = "powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path C:\inetpub\wwwrot\Default.htm -Value $hostname"
+        }
+
 Add-AzVmssExtension `
 	-Publisher Microsoft.Compute `
 	-Type CustomScriptExtension `
 	-Name IIS `
 	-VirtualMachineScaleSet $vmss `
 	-TypeHandlerVersion 1.8 `
-	-Setting '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}'
-#CLI와 마찬가지로 정상적인 설치가 진행되지 않아 RDP로 접속하여 수동으로 입력해야함
-#Add-WindowsFeature Web-Server; Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)
+	-Setting $settings
 
 Update-AzVmss `
     -ResourceGroupName $RgName `
@@ -90,9 +94,5 @@ Get-AzPublicIpAddress -ResourceGroupName $RgName -Name $ELB01PIP | Select IpAddr
 
 
 #접속 확인
-#azureuser
-#Azurexptmxm123
-
-#CLI와 마찬가지로 정상적인 설치가 진행되지 않아 RDP로 접속하여 수동으로 입력해야함
-#Add-WindowsFeature Web-Server; Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)
-
+echo "azureuser"
+echo "Azurexptmxm123"
