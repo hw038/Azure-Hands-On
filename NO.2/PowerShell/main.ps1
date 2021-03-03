@@ -93,6 +93,6 @@ Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb | Select-Object Name,Pr
 Get-AzPublicIpAddress -ResourceGroupName $RgName -Name $ELB01PIP | Select IpAddress
 
 
-#접속 확인
-echo "azureuser"
-echo "Azurexptmxm123"
+echo "접속 확인(계정)"
+echo "ID=azureuser"
+echo "PW=Azurexptmxm123"
