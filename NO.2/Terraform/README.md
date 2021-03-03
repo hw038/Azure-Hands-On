@@ -8,7 +8,7 @@
 - VMSS Extension의 경우 Linux와 Windows Server에 따라 publisher와 type을 변경해야 한다.
 
 ```
-Linux
+Linux Server(Ubuntu)
 -----------------------------------------------------------------------------------------
 publisher                       = "Microsoft.Azure.Extensions"
   type                            = "CustomScript"
@@ -17,6 +17,8 @@ publisher                       = "Microsoft.Azure.Extensions"
     "commandToExecute" = "apt-get -y update && apt-get -y install nginx && hostname > /var/www/html/index.html"
   })
 -----------------------------------------------------------------------------------------
+   
+   
 Windows Server
 -----------------------------------------------------------------------------------------
 publisher                       = "Microsoft.Compute"
