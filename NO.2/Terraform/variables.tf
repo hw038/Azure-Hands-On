@@ -18,6 +18,12 @@ variable "cred" {
 }
 
 
+variable "admin_username" {
+  default = "azureuser"
+}
+variable "admin_password" {
+  default = "Azurexptmxm123"
+}
 
 variable "vm01_nic" {
   description = "The Azure location where all resources in this example should be created"

@@ -1,7 +1,7 @@
 
 # 리소스 그룹
 module "rg" {
-  source = "./modules/rg"
+  source = "./rg"
   rg_name = var.rg_name
   rg_location = var.rg_location
 }
@@ -80,33 +80,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg01-subnet01" {
 
 
 ################### VM NIC 생성 ###################
-resource "azurerm_network_interface" "vm01-nic" {
-  name                = var.vm01_nic
-  location            = var.rg_location
-  resource_group_name = var.rg_name
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet01.id
-    private_ip_address_allocation = "Static"
-    private_ip_address = "10.1.0.4"
-  }
-  depends_on = [module.rg, azurerm_subnet.subnet01]
 
-}
-
-resource "azurerm_network_interface" "vm02-nic" {
-  name                = var.vm02_nic
-  location            = var.rg_location
-  resource_group_name = var.rg_name
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet01.id
-    private_ip_address_allocation = "Static"
-    private_ip_address = "10.1.0.5"
-  }
-  depends_on = [module.rg, azurerm_subnet.subnet01]
-
-}
 
 ################### AVset 생성 ###################
 resource "azurerm_availability_set" "AVSet01" {
@@ -118,90 +92,8 @@ resource "azurerm_availability_set" "AVSet01" {
 }
 
 
-################### VM 생성 ###################
-
-resource "azurerm_linux_virtual_machine" "vm01" {
-  name                = "vm01"
-  resource_group_name = var.rg_name
-  location            = var.rg_location
-  size                = "Standard_F2"
-  disable_password_authentication = "false"
-  admin_username      = var.cred.id
-  admin_password      = var.cred.pw
-  availability_set_id = azurerm_availability_set.AVSet01.id
-  network_interface_ids = [azurerm_network_interface.vm01-nic.id,]
-  depends_on = [module.rg, azurerm_availability_set.AVSet01, azurerm_network_interface.vm01-nic]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
-  }
 
 
-}
-
-resource "azurerm_linux_virtual_machine" "vm02" {
-  name                = "vm02"
-  resource_group_name = var.rg_name
-  location            = var.rg_location
-  size                = "Standard_F2"
-  disable_password_authentication = "false"
-  admin_username      = var.cred.id
-  admin_password      = var.cred.pw
-  availability_set_id = azurerm_availability_set.AVSet01.id
-  network_interface_ids = [azurerm_network_interface.vm02-nic.id,]
-  depends_on = [module.rg, azurerm_availability_set.AVSet01, azurerm_network_interface.vm02-nic]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
-  }
-}
-
-
-
-resource "azurerm_virtual_machine_extension" "vm01" {
-  name                 = "nginx"
-  virtual_machine_id   = azurerm_linux_virtual_machine.vm01.id
-  publisher            = "Microsoft.Azure.Extensions"
-  type                 = "CustomScript"
-  type_handler_version = "2.0"
-  depends_on = [module.rg,azurerm_linux_virtual_machine.vm01]
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "apt-get -y update && apt-get -y install nginx && hostname > /var/www/html/index.html"
-    }
-  SETTINGS
-}
-
-resource "azurerm_virtual_machine_extension" "vm02" {
-  name                 = "nginx"
-  virtual_machine_id   = azurerm_linux_virtual_machine.vm02.id
-  publisher            = "Microsoft.Azure.Extensions"
-  type                 = "CustomScript"
-  type_handler_version = "2.0"
-  depends_on = [module.rg,azurerm_linux_virtual_machine.vm02]
-
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "apt-get -y update && apt-get -y install nginx && hostname > /var/www/html/index.html"
-    }
-  SETTINGS
-}
 
 
 ################### elb 생성 ###################
@@ -235,64 +127,72 @@ resource "azurerm_lb_backend_address_pool" "elb_backendpool" {
   depends_on          = [module.rg, azurerm_lb.elb]
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "vm01-back" {
-  network_interface_id    = azurerm_network_interface.vm01-nic.id
-  ip_configuration_name   = "internal"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.elb_backendpool.id
-  depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_backend_address_pool.elb_backendpool, azurerm_network_interface.vm01-nic]
-
-}
-
-resource "azurerm_network_interface_backend_address_pool_association" "vm02-back" {
-  network_interface_id    = azurerm_network_interface.vm02-nic.id
-  ip_configuration_name   = "internal"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.elb_backendpool.id
-  depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_backend_address_pool.elb_backendpool, azurerm_network_interface.vm02-nic]
-
-}
+# resource "azurerm_network_interface_backend_address_pool_association" "example" {
+#   #network_interface_id    = azurerm_windows_virtual_machine_scale_set.tfmodule.network_interface
+#   network_interface_id    = "vmss-01-NIC"
+#   ip_configuration_name   = "vmss-01-int"
+#   backend_address_pool_id = azurerm_lb_backend_address_pool.elb_backendpool.id
+# }
 
 
-resource "azurerm_lb_nat_rule" "elbrule01" {
-  resource_group_name             = var.rg_name
-  loadbalancer_id                = azurerm_lb.elb.id
-  name                           = "VM01-SSH"
-  protocol                       = "Tcp"
-  frontend_port                  = 30001
-  backend_port                   = 22
-  frontend_ip_configuration_name = var.elb_PIP
-  depends_on          = [module.rg, azurerm_lb.elb]
+# resource "azurerm_network_interface_backend_address_pool_association" "vm01-back" {
+#   network_interface_id    = azurerm_network_interface.vm01-nic.id
+#   ip_configuration_name   = "internal"
+#   backend_address_pool_id = azurerm_lb_backend_address_pool.elb_backendpool.id
+#   depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_backend_address_pool.elb_backendpool, azurerm_network_interface.vm01-nic]
 
-}
+# }
 
-resource "azurerm_lb_nat_rule" "elbrule02" {
-  resource_group_name             = var.rg_name
-  loadbalancer_id                = azurerm_lb.elb.id
-  name                           = "VM02-SSH"
-  protocol                       = "Tcp"
-  frontend_port                  = 30002
-  backend_port                   = 22
-  frontend_ip_configuration_name = var.elb_PIP
-  depends_on          = [module.rg, azurerm_lb.elb]
+# resource "azurerm_network_interface_backend_address_pool_association" "vm02-back" {
+#   network_interface_id    = azurerm_network_interface.vm02-nic.id
+#   ip_configuration_name   = "internal"
+#   backend_address_pool_id = azurerm_lb_backend_address_pool.elb_backendpool.id
+#   depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_backend_address_pool.elb_backendpool, azurerm_network_interface.vm02-nic]
 
-}
+# }
 
 
-# NIC - Nat rule association
-resource "azurerm_network_interface_nat_rule_association" "vm01_ssh" {
-  network_interface_id  = azurerm_network_interface.vm01-nic.id
-  ip_configuration_name = "internal"
-  nat_rule_id           = azurerm_lb_nat_rule.elbrule01.id
-  depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_nat_rule.elbrule01, azurerm_network_interface.vm01-nic]
+# resource "azurerm_lb_nat_rule" "elbrule01" {
+#   resource_group_name             = var.rg_name
+#   loadbalancer_id                = azurerm_lb.elb.id
+#   name                           = "VM01-SSH"
+#   protocol                       = "Tcp"
+#   frontend_port                  = 30001
+#   backend_port                   = 22
+#   frontend_ip_configuration_name = var.elb_PIP
+#   depends_on          = [module.rg, azurerm_lb.elb]
 
-}
+# }
 
-resource "azurerm_network_interface_nat_rule_association" "vm02_ssh" {
-  network_interface_id  = azurerm_network_interface.vm02-nic.id
-  ip_configuration_name = "internal"
-  nat_rule_id           = azurerm_lb_nat_rule.elbrule02.id
-  depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_nat_rule.elbrule02, azurerm_network_interface.vm02-nic]
+# resource "azurerm_lb_nat_rule" "elbrule02" {
+#   resource_group_name             = var.rg_name
+#   loadbalancer_id                = azurerm_lb.elb.id
+#   name                           = "VM02-SSH"
+#   protocol                       = "Tcp"
+#   frontend_port                  = 30002
+#   backend_port                   = 22
+#   frontend_ip_configuration_name = var.elb_PIP
+#   depends_on          = [module.rg, azurerm_lb.elb]
 
-}
+# }
+
+
+# # NIC - Nat rule association
+# resource "azurerm_network_interface_nat_rule_association" "vm01_ssh" {
+#   network_interface_id  = azurerm_network_interface.vm01-nic.id
+#   ip_configuration_name = "internal"
+#   nat_rule_id           = azurerm_lb_nat_rule.elbrule01.id
+#   depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_nat_rule.elbrule01, azurerm_network_interface.vm01-nic]
+
+# }
+
+# resource "azurerm_network_interface_nat_rule_association" "vm02_ssh" {
+#   network_interface_id  = azurerm_network_interface.vm02-nic.id
+#   ip_configuration_name = "internal"
+#   nat_rule_id           = azurerm_lb_nat_rule.elbrule02.id
+#   depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_nat_rule.elbrule02, azurerm_network_interface.vm02-nic]
+
+# }
 
 resource "azurerm_lb_probe" "elb_probe" {
   resource_group_name = var.rg_name
@@ -320,22 +220,102 @@ resource "azurerm_lb_rule" "elb-lbrule" {
 
 
 #VMSS용
-# resource "azurerm_lb_nat_pool" "elb" {
-#   resource_group_name             = var.rg_name
-#   loadbalancer_id                = azurerm_lb.elb.id
-#   name                           = "VM01-SSH"
-#   protocol                       = "Tcp"
-#   frontend_port_start            = 30001
-#   frontend_port_end              = 30001
-#   backend_port                   = 22
-#   frontend_ip_configuration_name = var.elb_PIP
-# }
+resource "azurerm_lb_nat_pool" "elb" {
+  resource_group_name            = var.rg_name
+  loadbalancer_id                = azurerm_lb.elb.id
+  name                           = "VMSS-RDP"
+  protocol                       = "Tcp"
+  frontend_port_start            = 30001
+  frontend_port_end              = 30010
+  backend_port                   = 22
+  frontend_ip_configuration_name = var.elb_PIP
+  #depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_probe.elb_probe]
+
+}
 
 
 
+################### VMSS 생성 ###################
 
+resource "azurerm_linux_virtual_machine_scale_set" "tfmodule" {
+  resource_group_name           = var.rg_name
+  location                      = var.rg_location  
+  name                          = "vmss-01"
+  sku                           = "Standard_F2"
+  instances                     = 2
+  disable_password_authentication = false
+  admin_username                = var.admin_username
+  admin_password                = var.admin_password
+  depends_on          = [module.rg, azurerm_lb.elb, azurerm_lb_probe.elb_probe, azurerm_lb_nat_pool.elb]
+  upgrade_mode = "Automatic"
+  
+  os_disk {
+    storage_account_type        = "StandardSSD_LRS"
+    caching                     = "ReadWrite"
+  }
+  automatic_os_upgrade_policy {
+    disable_automatic_rollback  = false
+    enable_automatic_os_upgrade = false
+  }
 
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
 
+  # rolling_upgrade_policy {
+  #   max_batch_instance_percent              = 20
+  #   max_unhealthy_instance_percent          = 20
+  #   max_unhealthy_upgraded_instance_percent = 5
+  #   pause_time_between_batches              = "PT0S"
+  # }
+
+  # required when using rolling upgrade policy
+  health_probe_id = azurerm_lb_probe.elb_probe.id
+
+  network_interface {
+    name    = "vmss-01-NIC"
+    primary = true
+
+    ip_configuration {
+      name      = "vmss-01-int"
+      primary   = true
+      subnet_id = azurerm_subnet.subnet01.id
+      public_ip_address{
+        name = azurerm_public_ip.elb_pip.name
+      }
+      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.elb_backendpool.id]
+      load_balancer_inbound_nat_rules_ids = [azurerm_lb_nat_pool.elb.id]
+      
+    }
+  }
+}
+
+resource "azurerm_virtual_machine_scale_set_extension" "tfmodule" {
+  #count                           = length(var.vmss)
+  name                            = "nginx"
+  virtual_machine_scale_set_id    = azurerm_linux_virtual_machine_scale_set.tfmodule.id
+  publisher                       = "Microsoft.Azure.Extensions"
+  type                            = "CustomScript"
+  type_handler_version            = "2.0"
+  # auto_upgrade_minor_version      = true
+  settings = jsonencode({
+    "commandToExecute" = "apt-get -y update && apt-get -y install nginx && hostname > /var/www/html/index.html"
+  })
+}
+
+# settings = jsonencode({
+#     "commandToExecute" = "sudo apt-get -y update && sudo apt-get -y install nginx && hostname > index.html && sudo mv index.html /var/www/html/"
+#   })
+
+# Windows Server인 경우 
+# settings = <<SETTINGS
+#     {
+#         "commandToExecute": "powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"
+#     }
+#   SETTINGS
 
 
 
