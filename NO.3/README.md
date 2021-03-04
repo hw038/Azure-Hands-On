@@ -3,7 +3,7 @@
 - Azure Portal (100%)
 - Azure CLI (100%)
 - Azure PowerShell (100%)
-- Terraform (0%)
+- Terraform (100%)
 
 ## 학습 목표
 1. Internal Loadbalancer의 용도를 알아본다.
@@ -25,4 +25,4 @@
     - 2) Bastion→VM03 = 가능
 ## 주의 사항
 1. Storage FileShare의 경우 extension을 활용하여 자동 마운트하고싶었지만 해당 부분에 어려움이 있어 마운트할 수 있는 스크립트를 자동으로 표시
- 
+ -> terraform에서는 설정 
