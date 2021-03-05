@@ -2,6 +2,10 @@ locals {
   resource_group = "Hands-On-NO.5"
   location = "eastus"
 
+  resource_group2 = "Hands-On-NO.5-On"
+  location2 = "westus"
+
+
   storage = {
     storages = [ 
       ["no4storagehh", "S", "LRS"],
@@ -19,7 +23,6 @@ locals {
       ["NO.5-Subnet01", "NO.5-NSG01"],
     ]     
   }
-
   
   nsg2 = {
     nsg_names = ["NO.5-NSG02"] 
@@ -37,6 +40,7 @@ locals {
     address_space = ["10.0.0.0/8"]
     subnets = [
       ["NO.5-Subnet01", "10.1.0.0/16"],
+      ["GatewaySubnet", "10.100.100.0/24"],
     ] 
   }
 
@@ -45,6 +49,14 @@ locals {
     address_space = ["192.168.0.0/16"]
     subnets = [
       ["NO.5-Subnet02", "192.168.1.0/26"],
+    ] 
+  }
+
+  vnet_On = {
+    name = "NO.5-On-VNet"
+    address_space = ["20.0.0.0/16"]
+    subnets = [
+      ["NO.5-On-Subnet", "20.0.0.0/24"],
     ] 
   }
 
@@ -70,7 +82,31 @@ locals {
     ]  
   }
 
-  avset_names = ["NO.5-AVset01",]
+  gateway = {
+    vgw = [
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","10.100.100.0/24","20.0.0.0/16","VGW-PIP","NO.5-VNet01","NO.5-Subnet01"],
+    ]
+    lgw = [
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","${module.vgw_On.pip}","NO.5-VNet01"],
+    ]
+    vgw_conn = [
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","NO.5-LGW","NO.5-VGW-Conn","xptmxm123"],
+    ]
+  }
+
+  gateway_On = {
+    vgw = [
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","20.0.0.0/16","10.100.100.0/24","VGW-Onprem-PIP","NO.5-On-VNet","NO.5-On-Subnet"],
+    ]
+    lgw = [
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-LGW-Onprem","10.100.100.0/24","${module.vgw.pip}","NO.5-VNet01"],
+    ]
+    vgw_conn = [
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","NO.5-LGW-Onprem","NO.5-VGW-On-Conn","xptmxm123"],
+    ]
+  }
+
+  avset_names = ["NO.5-AVset01"]
 
   vm = {
     public_ips = [
@@ -131,12 +167,39 @@ locals {
     ],
 
   }
+
+  vm_On = {
+    public_ips = [
+      ["vm_On_pip", "S", "S"],
+    ],
+    nics = [
+      ["vm-On-nic-int", "NO.5-Subnet02", "S","20.0.0.20", "", "false"],
+    ],     
+    vms=[
+      ["vm-On", ["vm_On_pip","vm-On-nic-int"], "Standard_F2s", "NO.5-AVset02",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "", ["tag", "tag2"]],
+    ],
+    data_disks=[
+      ["vm-On", 0, "vm-On-disk-data-0", "H", 32, "ReadWrite"],
+    ],
+    data_disks_create=[
+      ["vm-On-disk-data-1", "H", 32], 
+    ],
+    data_disks_attach=[
+      ["vm-On", 1, "vm-On-disk-data-1", "ReadWrite"],
+    ],
+
+  }
 }
 
 module "resource_group" {
   source = "./resource_group"  
   name = local.resource_group
   location = local.location
+}
+module "resource_group2" {
+  source = "./resource_group"  
+  name = local.resource_group2
+  location = local.location2
 }
 
 module "storage" {
@@ -184,6 +247,16 @@ module "vnet2" {
   address_space = local.vnet2.address_space
   subnets = local.vnet2.subnets
 }
+
+module "vnet_On" {
+  source = "./network/vnet"  
+  vnet_name = local.vnet_On.name 
+  location = module.resource_group2.location
+  resource_group_name = module.resource_group2.name
+  address_space = local.vnet_On.address_space
+  subnets = local.vnet_On.subnets
+}
+
 module "peering" {
   source = "./network/peering"
 
@@ -270,6 +343,16 @@ module "nic2" {
   nics = local.vm2.nics
 }
 
+module "nic_On" {
+  source = "./network/nic/nic"
+
+  resource_group_name = module.resource_group2.name
+  location = module.resource_group2.location
+  subnet_id = module.vnet_On.subnet_id
+  #pip_id = module.pip.id
+  nics = local.vm_On.nics
+}
+
 module "nic_ext_backendpool_set" {
   source = "./network/nic/nic_backendpool_set"
 
@@ -320,6 +403,20 @@ module "vm2" {
   vms = local.vm2.vms
 }
 
+
+module "vm_On" {
+  source = "./vm/vm_On"
+
+  resource_group_name = module.resource_group.name
+  location = module.resource_group.location
+  nic_id = module.nic2.id
+  avset_id = ""
+  admin_username = "azureuser"
+  admin_password = "Azurexptmxm123"
+  vms = local.vm_On.vms
+  public_ips = local.vm_On.public_ips
+}
+
 module "routetable" {
   source = "./network/route"
   resource_group_name = module.resource_group.name
@@ -327,6 +424,23 @@ module "routetable" {
   route = local.route.table
   ip_private = module.nic2.ip_private
   subnet_id = module.vnet2.subnet_id
+}
+
+
+module "vgw" {
+  source = "./network/vgw/vgw"
+  resource_group_name = module.resource_group.name
+  location = module.resource_group.location
+  vgw = local.gateway.vgw
+  subnet_id = module.vnet.subnet_id
+}
+
+module "vgw_On" {
+  source = "./network/vgw/vgw"
+  resource_group_name = module.resource_group2.name
+  location = module.resource_group2.location
+  vgw = local.gateway_On.vgw
+  subnet_id = module.vnet_On.subnet_id
 }
 
 
