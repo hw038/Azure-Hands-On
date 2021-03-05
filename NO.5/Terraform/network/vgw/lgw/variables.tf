@@ -1,8 +1,8 @@
 variable "resource_group_name" { default = "" }
 variable "location" { default = "" }
-variable "ip_private" { default = {} }
+variable "public_ip" { default = {} }
 variable "subnet_id" { default = {} }
-variable "route" {default = [[]]}
+variable "lgw" {default = [[]]}
 
 # resource_group_name = module.resource_group.name                  # respurce group name
 # location = module.resource_group.location                         # location

@@ -87,7 +87,7 @@ locals {
       ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","10.100.100.0/24","20.0.0.0/16","VGW-PIP","NO.5-VNet01","NO.5-Subnet01"],
     ]
     lgw = [
-      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","${module.vgw_On.pip}","NO.5-VNet01"],
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","VGW-Onprem-PIP","NO.5-VNet01"],
     ]
     vgw_conn = [
       ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","NO.5-LGW","NO.5-VGW-Conn","xptmxm123"],
@@ -99,7 +99,7 @@ locals {
       ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","20.0.0.0/16","10.100.100.0/24","VGW-Onprem-PIP","NO.5-On-VNet","NO.5-On-Subnet"],
     ]
     lgw = [
-      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-LGW-Onprem","10.100.100.0/24","${module.vgw.pip}","NO.5-VNet01"],
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-LGW-Onprem","10.100.100.0/24","VGW-PIP","NO.5-VNet01"],
     ]
     vgw_conn = [
       ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","NO.5-LGW-Onprem","NO.5-VGW-On-Conn","xptmxm123"],
@@ -173,10 +173,10 @@ locals {
       ["vm_On_pip", "S", "S"],
     ],
     nics = [
-      ["vm-On-nic-int", "NO.5-Subnet02", "S","20.0.0.20", "", "false"],
+      ["vm-On-nic-int", "NO.5-On-Subnet", "S","20.0.0.20", "", "false"],
     ],     
     vms=[
-      ["vm-On", ["vm_On_pip","vm-On-nic-int"], "Standard_F2s", "NO.5-AVset02",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "", ["tag", "tag2"]],
+      ["vm-On", ["vm_On_pip","vm-On-nic-int"], "Standard_F2s", "",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "", ["tag", "tag2"]],
     ],
     data_disks=[
       ["vm-On", 0, "vm-On-disk-data-0", "H", 32, "ReadWrite"],
@@ -407,9 +407,9 @@ module "vm2" {
 module "vm_On" {
   source = "./vm/vm_On"
 
-  resource_group_name = module.resource_group.name
-  location = module.resource_group.location
-  nic_id = module.nic2.id
+  resource_group_name = module.resource_group2.name
+  location = module.resource_group2.location
+  nic_id = module.nic_On.id
   avset_id = ""
   admin_username = "azureuser"
   admin_password = "Azurexptmxm123"
@@ -423,7 +423,7 @@ module "routetable" {
   location = module.resource_group.location
   route = local.route.table
   ip_private = module.nic2.ip_private
-  subnet_id = module.vnet2.subnet_id
+  subnet_id = module.vnet.subnet_id
 }
 
 
@@ -443,6 +443,46 @@ module "vgw_On" {
   subnet_id = module.vnet_On.subnet_id
 }
 
+
+module "lgw" {
+  source = "./network/vgw/lgw"
+  resource_group_name = module.resource_group.name
+  location = module.resource_group.location
+  lgw = local.gateway.lgw
+  subnet_id = module.vnet.subnet_id
+  public_ip = module.vgw_On.pip
+}
+
+
+module "lgw_On" {
+  source = "./network/vgw/lgw"
+  resource_group_name = module.resource_group2.name
+  location = module.resource_group2.location
+  lgw = local.gateway_On.lgw
+  subnet_id = module.vnet_On.subnet_id
+  public_ip = module.vgw.pip
+}
+
+
+
+module "vgw_conn" {
+  source = "./network/vgw/vgw_conn"
+  resource_group_name = module.resource_group.name
+  location = module.resource_group.location
+  vgw_conn = local.gateway.vgw_conn
+  vgw_id = module.vgw.id
+  lgw_id = module.lgw.id
+}
+
+
+module "vgw_conn_On" {
+  source = "./network/vgw/vgw_conn"
+  resource_group_name = module.resource_group2.name
+  location = module.resource_group2.location
+  vgw_conn = local.gateway_On.vgw_conn
+  vgw_id = module.vgw_On.id
+  lgw_id = module.lgw_On.id
+}
 
 module "data_disk_create" {
    source = "./vm/disk/data_disk"

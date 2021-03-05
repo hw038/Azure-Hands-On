@@ -17,6 +17,7 @@ resource "azurerm_public_ip" "tfmodule" {
 }
 
 resource "azurerm_virtual_network_gateway" "tfmodule" {
+  count               = length(var.vgw)
   name                = var.vgw[count.index][2]
   location            = var.vgw[count.index][1]
   resource_group_name = var.vgw[count.index][0]
@@ -30,7 +31,7 @@ resource "azurerm_virtual_network_gateway" "tfmodule" {
 
   ip_configuration {
     name                          = "VGW__PIP"
-    public_ip_address_id          = azurerm_public_ip.tfmodule.id
+    public_ip_address_id          = azurerm_public_ip.tfmodule[count.index].id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = local.set_id[count.index][0]
   }
