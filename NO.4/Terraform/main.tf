@@ -10,7 +10,7 @@ locals {
   }
 
   nsg = {
-    nsg_names = ["NO.4-NSG01","NO.4-NSG02"] 
+    nsg_names = ["NO.4-NSG01"] 
     nsg_rules = [ 
       ["NO.4-NSG01", 100, "port-tcp-22", 22, "*", "tcp"],
       ["NO.4-NSG01", 110, "port-tcp-80", 80, "*", "tcp"],
