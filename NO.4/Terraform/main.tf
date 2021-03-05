@@ -66,7 +66,7 @@ locals {
 
   route = {
     table = [
-      ["NO.4-RT","route1", "192.168.0.0/16","VirtualAppliance", "vm-test-03-nic-int", "NO.4-Subnet02"]
+      ["NO.4-RT","route1", "192.168.0.0/16","VirtualAppliance", "vm-test-03-nic-int", "NO.4-Subnet01"]
     ]  
   }
 
