@@ -288,7 +288,7 @@ module "peering" {
   vnet2name = local.vnet2.name
   vnet1id = module.vnet.vnet_id
   vnet2id = module.vnet2.vnet_id
-
+  depends_on = [ module.vgw, module.vgw_On, module.lgw, module.lgw_On, module.vgw_conn, module.vgw_conn_On ]
 }
 
 
