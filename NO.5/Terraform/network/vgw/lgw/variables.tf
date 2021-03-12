@@ -7,9 +7,9 @@ variable "lgw" {default = [[]]}
 # resource_group_name = module.resource_group.name                  # respurce group name
 # location = module.resource_group.location                         # location
 # subnet_id = module.vnet.subnet_id                                 # subnet_id : subnet_id list
-# lbs=[                                                             # lbs : lb list (2-D array)
-#   ["lb-test-01", "subnet1", "D", "10.0.0.5"]                      # [ ["lb name", "subnet name", "private ip type(static : S, dymanic : D)", "private ip address"] ]
-# ]  
+# lgw = [
+#       ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","VGW-Onprem-PIP","NO.5-VNet01"],
+#     ]
 # probes=[                                                          # probes : probe list (2-D array)
 #   ["lb-test-01", "probe-http-80", "http", 80, "/"],               # [ ["lb name", "probe name", "protocol type", port, "request_path"] ]
 #   ["lb-test-01", "probe-tcp-22", "tcp", 22, "/"]

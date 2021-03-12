@@ -2,7 +2,7 @@ locals {
 
   set_id = [
     for s in var.lgw: [
-      lookup(var.public_ip, s[4], "")#, lookup(var.subnet_id, s[5], "")
+      lookup(var.public_ip, s[5], "")#, lookup(var.subnet_id, s[5], "")
     ]
   ]
 
@@ -13,5 +13,7 @@ resource "azurerm_local_network_gateway" "tfmodule" {
   resource_group_name = var.resource_group_name
   location            = var.location
   gateway_address     = local.set_id[count.index][0]
-  address_space       = [var.lgw[count.index][3]]
+  address_space       = var.lgw[count.index][4] == "" ? [var.lgw[count.index][3]] : [var.lgw[count.index][3],var.lgw[count.index][4]]
 }
+
+  
