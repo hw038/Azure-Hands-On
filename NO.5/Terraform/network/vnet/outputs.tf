@@ -13,6 +13,7 @@ output "subnet_id" {
     }
 }
 
+
 output "vnet_id" {
     description = "virtual network id 전달"
 
