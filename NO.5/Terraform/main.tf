@@ -35,6 +35,17 @@ locals {
     ]     
   }
 
+  nsg_On = {
+    nsg_names = ["NO.5-On-NSG"] 
+    nsg_rules = [ 
+      ["NO.5-On-NSG", 100, "port-tcp-22", 22, "*", "tcp"],
+      ["NO.5-On-NSG", 110, "port-tcp-80", 80, "*", "tcp"],
+    ],
+    nsg_subnet_set = [
+      ["NO.5-On-Subnet", "NO.5-On-NSG"]
+    ]     
+  }
+
   vnet = {
     name = "NO.5-VNet01"
     address_space = ["10.0.0.0/8"]
@@ -57,6 +68,7 @@ locals {
     address_space = ["20.0.0.0/16"]
     subnets = [
       ["NO.5-On-Subnet", "20.0.0.0/24"],
+      ["GatewaySubnet", "20.0.100.0/24"],
     ] 
   }
 
@@ -84,10 +96,10 @@ locals {
 
   gateway = {
     vgw = [
-      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","10.100.100.0/24","20.0.0.0/16","VGW-PIP","NO.5-VNet01","NO.5-Subnet01"],
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","10.100.100.0/24","20.0.0.0/16","VGW-PIP","NO.5-VNet01","NO.5-Subnet01","GatewaySubnet"],
     ]
     lgw = [
-      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","VGW-Onprem-PIP","NO.5-VNet01"],
+      ["${module.resource_group.name}","${module.resource_group.location}","NO.5-LGW","20.0.0.0/16","","VGW-Onprem-PIP","NO.5-VNet01"],
     ]
     vgw_conn = [
       ["${module.resource_group.name}","${module.resource_group.location}","NO.5-VGW","NO.5-LGW","NO.5-VGW-Conn","xptmxm123"],
@@ -96,10 +108,10 @@ locals {
 
   gateway_On = {
     vgw = [
-      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","20.0.0.0/16","10.100.100.0/24","VGW-Onprem-PIP","NO.5-On-VNet","NO.5-On-Subnet"],
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","20.0.0.0/16","10.100.100.0/24","VGW-Onprem-PIP","NO.5-On-VNet","NO.5-On-Subnet","GatewaySubnet"],
     ]
     lgw = [
-      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-LGW-Onprem","10.100.100.0/24","VGW-PIP","NO.5-VNet01"],
+      ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-LGW-Onprem","10.0.0.0/8","192.168.0.0/16","VGW-PIP","NO.5-VNet01"],
     ]
     vgw_conn = [
       ["${module.resource_group2.name}","${module.resource_group2.location}","NO.5-VGW-Onprem","NO.5-LGW-Onprem","NO.5-VGW-On-Conn","xptmxm123"],
@@ -147,11 +159,10 @@ locals {
 
   vm2 = {
     public_ips = [
-      ["", "S", "S"],
-      ["", "S", "S"]
+      ["vm_02_pip", "S", "S"],
     ],
     nics = [
-      ["vm-test-03-nic-int", "NO.5-Subnet02", "S","192.168.1.20", "", "false"],
+      ["vm-test-03-nic-int", "NO.5-Subnet02", "S","192.168.1.20", "vm_02_pip", "false"],
     ],     
     vms=[
       ["vm-test-03", ["vm-test-03-nic-int"], "Standard_F2s", "NO.5-AVset02",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "${module.storage.storagename}", ["tag", "tag2"]],
@@ -173,10 +184,10 @@ locals {
       ["vm_On_pip", "S", "S"],
     ],
     nics = [
-      ["vm-On-nic-int", "NO.5-On-Subnet", "S","20.0.0.20", "", "false"],
+      ["vm-On-nic-int", "NO.5-On-Subnet", "S","20.0.0.20", "vm_On_pip", "false"],
     ],     
     vms=[
-      ["vm-On", ["vm_On_pip","vm-On-nic-int"], "Standard_F2s", "",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "", ["tag", "tag2"]],
+      ["vm-On", ["vm-On-nic-int"], "Standard_F2s", "",["Canonical","UbuntuServer","16.04-LTS","latest"], ["P", 32], "", ["tag", "tag2"]],
     ],
     data_disks=[
       ["vm-On", 0, "vm-On-disk-data-0", "H", 32, "ReadWrite"],
@@ -229,6 +240,17 @@ module "nsg2" {
   nsg_names = local.nsg2.nsg_names
   nsg_rules = local.nsg2.nsg_rules
 }
+
+module "nsg_On" {
+  source = "./network/nsg/nsg"
+
+  location = module.resource_group2.location
+  resource_group_name = module.resource_group2.name
+
+  nsg_names = local.nsg_On.nsg_names
+  nsg_rules = local.nsg_On.nsg_rules
+}
+
 
 module "vnet" {
   source = "./network/vnet"  
@@ -287,6 +309,14 @@ module "nsg_subnet_set2" {
   nsg_subnet_set = local.nsg2.nsg_subnet_set
 }
 
+module "nsg_subnet_set_On" {
+  source = "./network/nsg/nsg_subnet_set"
+
+  nsg_id = module.nsg_On.id
+  subnet_id = module.vnet_On.subnet_id
+  nsg_subnet_set = local.nsg_On.nsg_subnet_set
+}
+
 module "lb" {
   source = "./network/lb/ext"
   resource_group_name = module.resource_group.name
@@ -339,7 +369,7 @@ module "nic2" {
   resource_group_name = module.resource_group.name
   location = module.resource_group.location
   subnet_id = module.vnet2.subnet_id
-  #pip_id = module.pip.id
+  pip_id = module.vm2.pip
   nics = local.vm2.nics
 }
 
@@ -349,7 +379,7 @@ module "nic_On" {
   resource_group_name = module.resource_group2.name
   location = module.resource_group2.location
   subnet_id = module.vnet_On.subnet_id
-  #pip_id = module.pip.id
+  pip_id = module.vm_On.pip
   nics = local.vm_On.nics
 }
 
@@ -401,6 +431,8 @@ module "vm2" {
   admin_username = "azureuser"
   admin_password = "Azurexptmxm123"
   vms = local.vm2.vms
+  public_ips = local.vm2.public_ips
+
 }
 
 
