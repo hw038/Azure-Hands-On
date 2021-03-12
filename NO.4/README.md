@@ -3,7 +3,7 @@
 - Azure Portal (100%)
 - Azure CLI (100%)
 - Azure PowerShell (100%)
-- Terraform (0%)
+- Terraform (100%)
 
 ## 학습 목표
 - 참고 자료 : [link](https://docs.microsoft.com/ko-kr/azure/virtual-network/tutorial-create-route-table-portal#route-traffic-through-an-nva)
