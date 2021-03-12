@@ -3,7 +3,7 @@
 - Azure Portal (100%)
 - Azure CLI (100%)
 - Azure PowerShell (100%)
-- Terraform (70%)
+- Terraform (100%)
 
 ## 학습 내용
 - VPN 생성 시 이용자에게 안내해줘야 할 내용과 범위를 알아본다.
