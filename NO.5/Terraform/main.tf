@@ -8,7 +8,7 @@ locals {
 
   storage = {
     storages = [ 
-      ["no4storagehh", "S", "LRS"],
+      ["no5storagehh", "S", "LRS"],
     ]
     
   }
@@ -524,15 +524,15 @@ module "data_disk_create" {
   disks = local.vm.data_disks_create
 }
 
-module "data_disk_attach" {
-   source = "./vm/disk/data_disk_attach"
+# module "data_disk_attach" {
+#    source = "./vm/disk/data_disk_attach"
 
-  resource_group_name = module.resource_group.name
-  location = module.resource_group.location
-  disks = local.vm.data_disks_attach
-  data_disk_id = module.data_disk_create.id
-  vm_id = module.vm.id
-}
+#   resource_group_name = module.resource_group.name
+#   location = module.resource_group.location
+#   disks = local.vm.data_disks_attach
+#   data_disk_id = module.data_disk_create.id
+#   vm_id = module.vm.id
+# }
 
 # module "bastion" {
 #   source = "./network/conn/bastion"
@@ -625,9 +625,9 @@ output "data_disk_create_id" {
   value = module.data_disk_create.id
 }
 
-output "data_disk_attach_info" {
-  value = module.data_disk_attach.info
-}
+# output "data_disk_attach_info" {
+#   value = module.data_disk_attach.info
+# }
 
 
 
