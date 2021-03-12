@@ -6,6 +6,7 @@ variable "admin_password" { default = "" }
 variable "vms" { default = [[]] }
 variable "avset_id" { default = {} }
 variable "extension" { default = [[]] }
+variable "public_ips" {default = [[]]}
 
 
 
