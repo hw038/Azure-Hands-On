@@ -1,5 +1,5 @@
-variable "resource_group_name" { default = "" }
-variable "location" { default = "" }
+#variable "resource_group_name" { default = "" }
+#variable "location" { default = "" }
 variable "public_ips" {default = [[]]}
 
 # resource_group_name = module.resource_group.name              # respurce group name

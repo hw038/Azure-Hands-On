@@ -118,6 +118,13 @@ locals {
     ]
   }
 
+  vgw_pip = {
+    public_ips = [
+      ["VGW-PIP", "B", "D","${module.resource_group.name}","${module.resource_group.location}"],
+      ["VGW-Onprem-PIP", "B", "D","${module.resource_group2.name}","${module.resource_group2.location}"]
+    ],
+  }
+
   avset_names = ["NO.5-AVset01"]
 
   vm = {
@@ -345,13 +352,13 @@ module "avset" {
   avset_names = local.avset_names
 }
 
-# module "pip" {
-#   source = "./network/pip"
+module "vgw_pip" {
+  source = "./network/pip"
 
-#   resource_group_name = module.resource_group.name
-#   location = module.resource_group.location
-#   public_ips = local.vm.public_ips
-# }
+  #resource_group_name = module.resource_group.name
+  #location = module.resource_group.location
+  public_ips = local.vgw_pip.public_ips
+}
 
 module "nic" {
   source = "./network/nic/nic"
@@ -456,6 +463,8 @@ module "routetable" {
   route = local.route.table
   ip_private = module.nic2.ip_private
   subnet_id = module.vnet.subnet_id
+  depends_on = [ module.peering ]
+
 }
 
 
@@ -465,6 +474,9 @@ module "vgw" {
   location = module.resource_group.location
   vgw = local.gateway.vgw
   subnet_id = module.vnet.subnet_id
+  public_id = module.vgw_pip.id
+  depends_on = [ module.nsg_subnet_set,module.vgw_pip ]
+
 }
 
 module "vgw_On" {
@@ -473,8 +485,10 @@ module "vgw_On" {
   location = module.resource_group2.location
   vgw = local.gateway_On.vgw
   subnet_id = module.vnet_On.subnet_id
-}
+  public_id = module.vgw_pip.id
+  depends_on = [ module.nsg_subnet_set_On,module.vgw,module.vgw_pip ]
 
+}
 
 module "lgw" {
   source = "./network/vgw/lgw"
@@ -482,7 +496,10 @@ module "lgw" {
   location = module.resource_group.location
   lgw = local.gateway.lgw
   subnet_id = module.vnet.subnet_id
-  public_ip = module.vgw_On.pip
+  public_ip = module.vgw_pip.pip
+  depends_on = [ module.vgw,module.vgw_On,module.vgw_pip ]
+
+
 }
 
 
@@ -492,7 +509,9 @@ module "lgw_On" {
   location = module.resource_group2.location
   lgw = local.gateway_On.lgw
   subnet_id = module.vnet_On.subnet_id
-  public_ip = module.vgw.pip
+  public_ip = module.vgw_pip.pip
+  depends_on = [ module.vgw,module.vgw_On,module.vgw_pip ]
+
 }
 
 
@@ -504,6 +523,8 @@ module "vgw_conn" {
   vgw_conn = local.gateway.vgw_conn
   vgw_id = module.vgw.id
   lgw_id = module.lgw.id
+  depends_on = [ module.vgw,module.vgw_On,module.lgw,module.lgw_On ]
+
 }
 
 
@@ -514,6 +535,8 @@ module "vgw_conn_On" {
   vgw_conn = local.gateway_On.vgw_conn
   vgw_id = module.vgw_On.id
   lgw_id = module.lgw_On.id
+  depends_on = [ module.vgw,module.vgw_On,module.lgw,module.lgw_On ]
+
 }
 
 module "data_disk_create" {

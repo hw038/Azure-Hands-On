@@ -1,6 +1,7 @@
 variable "resource_group_name" { default = "" }
 variable "location" { default = "" }
 variable "subnet_id" { default = {} }
+variable "public_id" { default = {} }
 variable "vgw" {default = [[]]}
 
 # resource_group_name = module.resource_group.name                  # respurce group name
