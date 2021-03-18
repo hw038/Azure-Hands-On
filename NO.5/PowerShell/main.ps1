@@ -1,190 +1,210 @@
-#!/bin/sh
-
-# 자원명
-RgName="Hands-On-5-RG"
-Location="eastus"
-Vnet01Name="Hands-On-5-VNet01"
-Vnet02Name="Hands-On-5-VNet02"
-Subnet01Name="Hands-On-5-Subnet01"
-Subnet02Name="Hands-On-5-Subnet02"
-GatewaySubnet="GatewaySubnet"
-VGWPIP="VGatewayPIP"
-VGWName="Hands-On-5-VGateway"
-NSG01Name="Hands-On-5-NSG01"
-NSG02Name="Hands-On-5-NSG02"
-VMAvSet01Name="AvSet01"
-ELB01Name="Hands-On-5-ELB01"
-ELB01PIP="ELB01PIP"
-ELB01BkPool01="ELB01BackPool01"
-ELB01HTTPProbe="Health80Probe"
-ELB01NAT01="VM01RDP"
-ELB01NAT02="VM02RDP"
-VM01Name="Hands-On-5-VM01"
-VM01Nic="Hands-On-5-VM01VMNic"
-VM01ipconfig="ipconfigHands-On-5-VM01"
-VM02Name="Hands-On-5-VM02"
-VM02Nic="Hands-On-5-VM02VMNic"
-VM02ipconfig="ipconfigHands-On-5-VM02"
-VM03Name="Hands-On-5-VM03"
-VM03Nic="Hands-On-5-VM03VMNic"
-VM03ipconfig="ipconfigHands-On-5-VM03"
-VM01IP="10.1.0.4"
-VM02IP="10.1.0.5"
-VM03IP="192.168.1.20"
-RouteTableName="Hands-On-5-RT"
+#자원명
+$RgName="Hands-On-5-RG"
+$Location="eastus"
+$Vnet01Name="Hands-On-5-VNet01"
+$Vnet02Name="Hands-On-5-VNet02"
+$Subnet01Name="Hands-On-5-Subnet01"
+$Subnet02Name="Hands-On-5-Subnet02"
+$GatewaySubnet="GatewaySubnet"
+$VGWPIP="VGatewayPIP"
+$VGWName="Hands-On-5-VGW"
+$NSG01Name="Hands-On-5-NSG01"
+$NSG02Name="Hands-On-5-NSG02"
+$VMAvSet01Name="AvSet01"
+$ELB01Name="Hands-On-5-ELB01"
+$ELB01PIP="ELB01PIP"
+$ELB01BkPool01="ELB01BackPool01"
+$ELB01HTTPProbe="Health80Probe"
+$ELB01NAT01="VM01RDP"
+$ELB01NAT02="VM02RDP"
+$VM01Name="Hands-On-5-VM01"
+$VM01Nic="Hands-On-5-VM01VMNic"
+$VM01ipconfig="ipconfigHands-On-5-VM01"
+$VM02Name="Hands-On-5-VM02"
+$VM02Nic="Hands-On-5-VM02VMNic"
+$VM02ipconfig="ipconfigHands-On-5-VM02"
+$VM03Name="Hands-On-5-VM03"
+$VM03Nic="Hands-On-5-VM03VMNic"
+$VM03ipconfig="ipconfigHands-On-5-VM03"
+$VM01IP="10.1.0.4"
+$VM02IP="10.1.0.5"
+$VM03IP="192.168.1.20"
+$RouteTableName="Hands-On-5-RT"
 
 
 # On-Pre 자원명
-OnRgName="Hands-On-5-OnRG"
-OnLocation="westus"
-OnNSG01Name="Hands-On-5-OnNSG01"
-OnVnet01Name="Hands-On-5-OnVNet"
-OnSubnet01Name="Hands-On-5-OnSubnet"
-OnGatewaySubnet="GatewaySubnet"
-OnVGWPIP="OnVGatewayPIP"
-OnVGWName="Hands-On-5-OnVGateway"
-OnNSG01Name="Hands-On-5-OnNSG"
-OnVM01Name="Hands-On-5-OnVM"
-OnVM01Nic="Hands-On-5-OnVMVMNic"
-OnVM01ipconfig="ipconfigHands-On-5-OnVM"
-OnVM01IP="20.0.0.4"
-OnVMPIP="Hands-On-5-OnVMPIP"
+$OnRgName="Hands-On-5-OnRG"
+$OnLocation="westus"
+$OnNSG01Name="Hands-On-5-OnNSG01"
+$OnVnet01Name="Hands-On-5-OnVNet"
+$OnSubnet01Name="Hands-On-5-OnSubnet"
+$OnGatewaySubnet="GatewaySubnet"
+$OnVGWPIP="OnVGatewayPIP"
+$OnVGWName="Hands-On-5-OnVGW"
+$OnNSG01Name="Hands-On-5-OnNSG"
+$OnVM01Name="Hands-On-5-OnVM"
+$OnVM01Nic="Hands-On-5-OnVMVMNic"
+$OnVM01ipconfig="ipconfigHands-On-5-OnVM"
+$OnVM01IP="20.0.0.4"
+$OnVMPIP="Hands-On-5-OnVMPIP"
 
-ID="azureuser"
-PW="Azurexptmxm123"
+$ID="azureuser"
+$PW=ConvertTo-SecureString "Azurexptmxm123" -AsPlainText -Force
 
-#---------------------------------------------------------------------------------
+#계정 정보 세팅
+$Credential = New-Object System.Management.Automation.PSCredential ($ID, $PW);
 
-az group create --name $RgName --location $Location
+New-AzResourceGroup -Name $RgName -Location $Location
 
 #On RG
-az group create --name $OnRgName --location $OnLocation
-
-az network vnet create --name $Vnet01Name -g $RgName --location $Location --address-prefix 10.0.0.0/8
-az network vnet create --name $Vnet02Name -g $RgName --location $Location --address-prefix 192.168.0.0/16
-
-#On Vnet
-az network vnet create --name $OnVnet01Name -g $OnRgName --location $OnLocation --address-prefix 20.0.0.0/8
+New-AzResourceGroup -Name $OnRgName -Location $OnLocation
 
 
-#Route Table 세팅
-az network route-table create --name $RouteTableName -g $RgName --location $Location
-az network route-table route create --address-prefix 192.168.0.0/16 --name "RT01" --next-hop-type VirtualAppliance -g $RgName --route-table-name $RouteTableName --next-hop-ip-address $VM03IP
+#Public IP 생성(ELB)
+$StrELB01PIP = New-AzPublicIpAddress -Name $ELB01PIP -ResourceGroupName $RgName -Location $Location -AllocationMethod Static -Sku Standard
+$StrVGWPIP = New-AzPublicIpAddress -Name $VGWPIP -ResourceGroupName $RgName -Location $Location -AllocationMethod Dynamic -Sku Basic
+$StrOnVGWPIP = New-AzPublicIpAddress -Name $OnVGWPIP -ResourceGroupName $OnRgName -Location $OnLocation -AllocationMethod Dynamic -Sku Basic
+$StrOnMVPIP =  New-AzPublicIpAddress -Name $OnVMPIP -ResourceGroupName $OnRgName -Location $OnLocation -AllocationMethod Static -Sku Standard
 
 
-az network vnet subnet create --address-prefixes 10.1.0.0/16 --name $Subnet01Name -g $RgName --vnet-name $Vnet01Name --route-table $RouteTableName
-az network vnet subnet create --address-prefixes 192.168.1.0/26 --name $Subnet02Name -g $RgName --vnet-name $Vnet02Name
-
-
-#VGW IP의 경우 SKU가 Basic이여야한다. CLI로 생성 중 Standard로 생성하게 되면 VPN 연결을 할 수 없으니 주의
-az network public-ip create -g $RgName --name $VGWPIP --sku Basic
-az network public-ip create -g $OnRgName --name $OnVGWPIP --sku Basic
-
-#Azure vgw 생성
-az network vnet subnet create --address-prefixes 10.100.100.0/24 --name $GatewaySubnet -g $RgName --vnet-name $Vnet01Name
-az network vnet-gateway create -n $VGWName -l $Location --public-ip-address $VGWPIP -g $RgName --vnet $Vnet01Name --gateway-type Vpn --sku VpnGw1 --vpn-type RouteBased --no-wait
-
-#On vgw 생성
-az network vnet subnet create --address-prefixes 20.0.0.0/24 --name $OnSubnet01Name -g $OnRgName --vnet-name $OnVnet01Name
-az network vnet subnet create --address-prefixes 20.100.200.0/24 --name $OnGatewaySubnet -g $OnRgName --vnet-name $OnVnet01Name
-az network vnet-gateway create -n $OnVGWName -l $OnLocation --public-ip-address $OnVGWPIP -g $OnRgName --vnet $OnVnet01Name --gateway-type Vpn --sku VpnGw1 --vpn-type RouteBased --no-wait
-
-az network nsg create -g $RgName --n $NSG01Name --location $Location
-az network nsg create -g $RgName --n $NSG02Name --location $Location
-az network nsg create -g $OnRgName --n $OnNSG01Name --location $OnLocation
-
-
-#NSG 80, 22, 3389 Allow Rule 생성
-az network nsg rule create -g $RgName --nsg-name $NSG01Name --name Allow-HTTP-All --access Allow --protocol Tcp --direction Inbound --priority 100 --source-address-prefix Internet --source-port-range "*" --destination-address-prefix "*" --destination-port-range 80
-az network nsg rule create -g $RgName --nsg-name $NSG01Name --name Allow-SSH-All --access Allow --protocol Tcp --direction Inbound --priority 150 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 22
-az network nsg rule create -g $RgName --nsg-name $NSG01Name --name Allow-RDP-All --access Allow --protocol Tcp --direction Inbound --priority 250 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 3389
-
-#NSG 규칙 Vnet, Subnet에 연결
-az network vnet subnet update --vnet-name $Vnet01Name --name $Subnet01Name -g $RgName --network-security-group $NSG01Name
-
-az network nsg rule create -g $RgName --nsg-name $NSG02Name --name Allow-HTTP-All --access Allow --protocol Tcp --direction Inbound --priority 100 --source-address-prefix Internet --source-port-range "*" --destination-address-prefix "*" --destination-port-range 80
-az network nsg rule create -g $RgName --nsg-name $NSG02Name --name Allow-SSH-All --access Allow --protocol Tcp --direction Inbound --priority 150 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 22
-az network nsg rule create -g $RgName --nsg-name $NSG02Name --name Allow-RDP-All --access Allow --protocol Tcp --direction Inbound --priority 250 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 3389
-
-az network vnet subnet update --vnet-name $Vnet02Name --name $Subnet02Name -g $RgName --network-security-group $NSG02Name
-
+#NSG 규칙 설정 및 생성
+$rdpRule= New-AzNetworkSecurityRuleConfig -Name rdp-rule -Description "Allow RDP" -Access Allow -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
+$sshRule = New-AzNetworkSecurityRuleConfig -Name ssh-rule -Description "Allow SSH" -Access Allow -Protocol Tcp -Direction Inbound -Priority 150 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 22
+$httpRule = New-AzNetworkSecurityRuleConfig -Name http-rule -Description "Allow HTTP" -Access Allow -Protocol Tcp -Direction Inbound -Priority 200 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 80
+$StrNSG01 = New-AzNetworkSecurityGroup -ResourceGroupName $RgName -Location $Location -Name $NSG01Name -SecurityRules $rdpRule,$sshRule,$httpRule
+$StrNSG02 = New-AzNetworkSecurityGroup -ResourceGroupName $RgName -Location $Location -Name $NSG02Name -SecurityRules $rdpRule,$sshRule,$httpRule
 
 #On NSG
-az network nsg rule create -g $OnRgName --nsg-name $OnNSG01Name --name Allow-HTTP-All --access Allow --protocol Tcp --direction Inbound --priority 100 --source-address-prefix Internet --source-port-range "*" --destination-address-prefix "*" --destination-port-range 80
-az network nsg rule create -g $OnRgName --nsg-name $OnNSG01Name --name Allow-SSH-All --access Allow --protocol Tcp --direction Inbound --priority 150 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 22
-az network nsg rule create -g $OnRgName --nsg-name $OnNSG01Name --name Allow-RDP-All --access Allow --protocol Tcp --direction Inbound --priority 250 --source-address-prefix "*" --source-port-range "*" --destination-address-prefix "*" --destination-port-range 3389
+$OnStrNSG01 = New-AzNetworkSecurityGroup -ResourceGroupName $OnRgName -Location $OnLocation -Name $OnNSG01Name -SecurityRules $rdpRule,$sshRule,$httpRule
 
-az network vnet subnet update --vnet-name $OnVnet01Name --name $OnSubnet01Name -g $OnRgName --network-security-group $OnNSG01Name
+#Route Table 세팅
+$Route = New-AzRouteConfig -Name "RT01" -AddressPrefix 192.168.0.0/16 -NextHopType "VirtualAppliance" -NextHopIpAddress $VM03IP
+$routeTable = New-AzRouteTable -Name $RouteTableName -ResourceGroupName $RgName -Location $Location -Route $Route
+
+$StrSubnet01 = New-AzVirtualNetworkSubnetConfig -Name $Subnet01Name -AddressPrefix "10.1.0.0/16" -NetworkSecurityGroup $StrNSG01 -RouteTable $routeTable
+$StrSubnet02 = New-AzVirtualNetworkSubnetConfig -Name $Subnet02Name -AddressPrefix "192.168.1.0/26" -NetworkSecurityGroup $StrNSG02
+
+#On Subnet
+$OnStrSubnet01 = New-AzVirtualNetworkSubnetConfig -Name $OnSubnet01Name -AddressPrefix "20.0.0.0/16" -NetworkSecurityGroup $OnStrNSG01
+$StrGatewaySubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnet -AddressPrefix "10.100.100.0/24"
+$OnStrGatewaySubnet = New-AzVirtualNetworkSubnetConfig -Name $OnGatewaySubnet -AddressPrefix "20.100.100.0/24"
+
+
+$StrVnet01 = New-AzVirtualNetwork -Name $Vnet01Name -ResourceGroupName $RgName -Location $Location -AddressPrefix 10.0.0.0/8 -Subnet $StrSubnet01,$StrGatewaySubnet
+$StrVnet02 = New-AzVirtualNetwork -Name $Vnet02Name -ResourceGroupName $RgName -Location $Location -AddressPrefix 192.168.0.0/16 -Subnet $StrSubnet02
+
+#On Vnet
+$OnStrVnet01 = New-AzVirtualNetwork -Name $OnVnet01Name -ResourceGroupName $OnRgName -Location $OnLocation -AddressPrefix 20.0.0.0/8 -Subnet $OnStrSubnet01,$OnStrGatewaySubnet
+
+
+#VGW Subnet, VGW 생성
+$StrGatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name $GatewaySubnet -VirtualNetwork $StrVnet01
+$strgwipconfig = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig1 -SubnetId $StrGatewaySubnet.Id -PublicIpAddressId $StrVGWPIP.Id
+$strVGW = New-AzVirtualNetworkGateway -Name $VGWName -ResourceGroupName $RgName -Location $Location -IpConfigurations $strgwipconfig -GatewayType Vpn -VpnType RouteBased -GatewaySku VpnGw1 -AsJob
+
+$OnStrGatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name $OnGatewaySubnet -VirtualNetwork $OnStrVnet01
+$Onstrgwipconfig = New-AzVirtualNetworkGatewayIpConfig -Name Ongwipconfig1 -SubnetId $OnStrGatewaySubnet.Id -PublicIpAddressId $StrOnVGWPIP.Id
+$OnstrVGW = New-AzVirtualNetworkGateway -Name $OnVGWName -ResourceGroupName $OnRgName -Location $OnLocation -IpConfigurations $Onstrgwipconfig -GatewayType Vpn -VpnType RouteBased -GatewaySku VpnGw1 -AsJob
+
+#NIC 생성
+$StrVM01IP = New-AzNetworkInterfaceIpConfig -Name $VM01Nic -PrivateIpAddressVersion IPv4 -PrivateIpAddress $VM01IP -SubnetId $StrVnet01.Subnets[0].Id
+$StrVM02IP = New-AzNetworkInterfaceIpConfig -Name $VM02Nic -PrivateIpAddressVersion IPv4 -PrivateIpAddress $VM02IP -SubnetId $StrVnet01.Subnets[0].Id
+$StrVM03IP = New-AzNetworkInterfaceIpConfig -Name $VM03Nic -PrivateIpAddressVersion IPv4 -PrivateIpAddress $VM03IP -SubnetId $StrVnet02.Subnets[0].Id
+
+#On NIC
+$OnStrVM01IP = New-AzNetworkInterfaceIpConfig -Name $OnVM01Nic -PrivateIpAddressVersion IPv4 -PrivateIpAddress $OnVM01IP -PublicIpAddress $StrOnMVPIP -SubnetId $OnStrVnet01.Subnets[0].Id
 
 
 #VM AvSet 생성
-az vm availability-set create -n $VMAvSet01Name -g $RgName --platform-fault-domain-count 2 --platform-update-domain-count 5
+$availSet01 = New-AzAvailabilitySet -ResourceGroupName $RgName -Name $VMAvSet01Name -Location $Location -PlatformFaultDomainCount 2 -PlatformUpdateDomainCount 5 -Sku Aligned
 
-#VM 생성
-az vm create -g $RgName --location $Location --name $VM01Name --vnet-name $Vnet01Name --subnet $Subnet01Name --nsg $NSG01Name --public-ip-address "" --private-ip-address $VM01IP --public-ip-sku Standard --public-ip-address-allocation static --availability-set $VMAvSet01Name --image win2016datacenter --admin-username azureuser --admin-password $PW --no-wait
-az vm create -g $RgName --location $Location --name $VM02Name --vnet-name $Vnet01Name --subnet $Subnet01Name --nsg $NSG01Name --public-ip-address "" --private-ip-address $VM02IP --public-ip-sku Standard --public-ip-address-allocation static --availability-set $VMAvSet01Name --image win2016datacenter --admin-username azureuser --admin-password $PW --no-wait
-az vm create -g $RgName --location $Location --name $VM03Name --vnet-name $Vnet02Name --subnet $Subnet02Name --nsg $NSG02Name --public-ip-address "" --private-ip-address $VM03IP --public-ip-sku Standard --public-ip-address-allocation static --image win2016datacenter --admin-username azureuser --admin-password $PW --no-wait
+#ELB 세팅
+$elbfrontend = New-AzLoadBalancerFrontendIpConfig -Name "LoadBalancerFrontEnd" -PublicIpAddress $StrELB01PIP
+$elbbackendAddressPool = New-AzLoadBalancerBackendAddressPoolConfig -Name $ELB01BkPool01
+$elbprobe = New-AzLoadBalancerProbeConfig -Name $ELB01HTTPProbe -Protocol "http" -Port 80 -IntervalInSeconds 15 -ProbeCount 2 -RequestPath /
+$inboundNatRule1 = New-AzLoadBalancerInboundNatRuleConfig -Name $ELB01NAT01 -FrontendIPConfiguration $elbfrontend -Protocol "Tcp" -FrontendPort 30001 -BackendPort 3389 -IdleTimeoutInMinutes 4
+$inboundNatRule2 = New-AzLoadBalancerInboundNatRuleConfig -Name $ELB01NAT02 -FrontendIPConfiguration $elbfrontend -Protocol "Tcp" -FrontendPort 30002 -BackendPort 3389 -IdleTimeoutInMinutes 4
+$elblbrule = New-AzLoadBalancerRuleConfig -Name "HTTP-Rule" -FrontendIPConfiguration $elbfrontend -BackendAddressPool $elbbackendAddressPool -Probe $probe -Protocol "Tcp" -FrontendPort 80 -BackendPort 80 -IdleTimeoutInMinutes 15 -LoadDistribution SourceIP
 
-
-az vm create -g $OnRgName --location $OnLocation --name $OnVM01Name --vnet-name $OnVnet01Name --subnet $OnSubnet01Name --nsg $OnNSG01Name --public-ip-address $OnVMPIP --private-ip-address $OnVM01IP --public-ip-sku Standard --public-ip-address-allocation static --image win2016datacenter --admin-username azureuser --admin-password $PW --no-wait
-
-
-#ELB PIP 생성
-az network public-ip create -g $RgName --name $ELB01PIP --sku Standard --zone 1
+$elb = New-AzLoadBalancer -Name $ELB01Name -ResourceGroupName $RgName -Location $Location -FrontendIpConfiguration $elbfrontend -BackendAddressPool $elbbackendAddressPool -Probe $elbprobe -InboundNatRule $inboundNatRule1,$inboundNatRule2 -LoadBalancingRule $elblbrule -Sku Standard
 
 
-#ELB 생성
-az network lb create -g $RgName --name $ELB01Name --sku Standard --public-ip-address $ELB01PIP --backend-pool-name $ELB01BkPool01
+#VM 만들기
+$StrVM01NIC = New-AzNetworkInterface -ResourceGroupName $RgName -Location $Location -Name $VM01Nic -LoadBalancerBackendAddressPool $elbbackendAddressPool -LoadBalancerInboundNatRule $inboundNatRule1 -Subnet $StrVnet01.Subnets[0] -force
+$StrVM02NIC = New-AzNetworkInterface -ResourceGroupName $RgName -Location $Location -Name $VM02Nic -LoadBalancerBackendAddressPool $elbbackendAddressPool -LoadBalancerInboundNatRule $inboundNatRule2 -Subnet $StrVnet01.Subnets[0] -force
+$StrVM03NIC = New-AzNetworkInterface -ResourceGroupName $RgName -Location $Location -Name $VM03Nic -Subnet $StrVnet02.Subnets[0] -force
 
-#ELB 상태 프로브 만들기
-az network lb probe create -g $RgName --lb-name $ELB01Name --name $ELB01HTTPProbe --protocol tcp --port 80
+#On VM
+$OnStrVM01NIC = New-AzNetworkInterface -ResourceGroupName $OnRgName -Location $OnLocation -Name $OnVM01Nic -Subnet $OnStrVnet01.Subnets[0] -force
 
-#ELB 부하 분산 규칙 생성
-az network lb rule create -g $RgName --lb-name $ELB01Name --name HTTPRule --protocol tcp --frontend-port 80 --backend-port 80 --frontend-ip-name LoadBalancerFrontEnd --backend-pool-name $ELB01BkPool01 --probe-name $ELB01HTTPProbe --idle-timeout 4
-
-#ELB 인바운드 NAT 규칙 생성
-az network lb inbound-nat-rule create -g $RgName --frontend-ip-name LoadBalancerFrontEnd --lb-name $ELB01Name --name $ELB01NAT01 --protocol Tcp --frontend-port 30001 --backend-port 3389
-az network lb inbound-nat-rule create -g $RgName --frontend-ip-name LoadBalancerFrontEnd --lb-name $ELB01Name --name $ELB01NAT02 --protocol Tcp --frontend-port 30002 --backend-port 3389
-
-
-#ELB 백엔드 풀에 VM 추가(적용)
-az network nic ip-config address-pool add -g $RgName --nic-name $VM01Nic --ip-config-name $VM01ipconfig --lb-name $ELB01Name --address-pool $ELB01BkPool01
-az network nic ip-config address-pool add -g $RgName --nic-name $VM02Nic --ip-config-name $VM02ipconfig --lb-name $ELB01Name --address-pool $ELB01BkPool01
-
-#ELB 인바운드 NAT 규칙 적용
-az network nic ip-config inbound-nat-rule add -g $RgName --nic-name $VM01Nic --ip-config-name $VM01ipconfig --lb-name $ELB01Name --inbound-nat-rule $ELB01NAT01
-az network nic ip-config inbound-nat-rule add -g $RgName --nic-name $VM02Nic --ip-config-name $VM02ipconfig --lb-name $ELB01Name --inbound-nat-rule $ELB01NAT02
+#On-Prem VM PIP를 VM NIC에 연결
+$vnet = Get-AzVirtualNetwork -Name $OnVnet01Name -ResourceGroupName $OnRgName
+$subnet = Get-AzVirtualNetworkSubnetConfig -Name $OnSubnet01Name -VirtualNetwork $vnet
+$nic = Get-AzNetworkInterface -Name $OnVM01Nic -ResourceGroupName $OnRgName
+$pip = Get-AzPublicIpAddress -Name $OnVMPIP -ResourceGroupName $OnRgName
+$nic | Set-AzNetworkInterfaceIpConfig -Name ipconfig1 -PublicIPAddress $pip -Subnet $subnet
+$nic | Set-AzNetworkInterface
 
 
-#Peering 세팅
+#PowerShell로 NIC Private IP 생성 시 Static으로 설정되어야하나 Dynamic으로 설정되는 오류 있으므로 수동으로 다시 한번 더 설정
+$StrVM03NIC = Get-AzNetworkInterface -ResourceGroupName $RgName -Name $VM03Nic
+$StrVM03NIC.IpConfigurations[0].PrivateIpAddress = "192.168.1.20"
+$StrVM03NIC.IpConfigurations[0].PrivateIpAllocationMethod = "Static"
+Set-AzNetworkInterface -NetworkInterface $StrVM03NIC
+
+
+$StrVM01 = New-AzVMConfig -VMName $VM01Name -VMSize "Standard_D1_v2" -AvailabilitySetId $availSet01.Id
+$StrVM01 = Set-AzVMOperatingSystem -VM $StrVM01 -Windows -ComputerName $VM01Name -Credential $Credential
+$StrVM01 = Add-AzVMNetworkInterface -VM $StrVM01 -Id $StrVM01NIC.Id
+$StrVM01 = Set-AzVMSourceImage -VM $StrVM01 -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus '2016-Datacenter' -Version latest
+New-AzVM -ResourceGroupName $RgName -Location $Location -VM $StrVM01 -Verbose -DisableBginfoExtension -AsJob
+
+$StrVM02 = New-AzVMConfig -VMName $VM02Name -VMSize "Standard_D1_v2" -AvailabilitySetId $availSet01.Id
+$StrVM02 = Set-AzVMOperatingSystem -VM $StrVM02 -Windows -ComputerName $VM02Name -Credential $Credential
+$StrVM02 = Add-AzVMNetworkInterface -VM $StrVM02 -Id $StrVM02NIC.Id
+$StrVM02 = Set-AzVMSourceImage -VM $StrVM02 -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus '2016-Datacenter' -Version latest
+New-AzVM -ResourceGroupName $RgName -Location $Location -VM $StrVM02 -Verbose -DisableBginfoExtension -AsJob
+
+
+$StrVM03 = New-AzVMConfig -VMName $VM03Name -VMSize "Standard_D1_v2"
+$StrVM03 = Set-AzVMOperatingSystem -VM $StrVM03 -Windows -ComputerName $VM03Name -Credential $Credential
+$StrVM03 = Add-AzVMNetworkInterface -VM $StrVM03 -Id $StrVM03NIC.Id
+$StrVM03 = Set-AzVMSourceImage -VM $StrVM03 -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus '2016-Datacenter' -Version latest
+New-AzVM -ResourceGroupName $RgName -Location $Location -VM $StrVM03 -Verbose -DisableBginfoExtension -AsJob
+
+$OnStrVM01 = New-AzVMConfig -VMName $OnVM01Name -VMSize "Standard_D1_v2"
+$OnStrVM01 = Set-AzVMOperatingSystem -VM $OnStrVM01 -Windows -ComputerName $OnVM01Name -Credential $Credential
+$OnStrVM01 = Add-AzVMNetworkInterface -VM $OnStrVM01 -Id $OnStrVM01NIC.Id
+$OnStrVM01 = Set-AzVMSourceImage -VM $OnStrVM01 -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer' -Skus '2016-Datacenter' -Version latest
+New-AzVM -ResourceGroupName $OnRgName -Location $OnLocation -VM $OnStrVM01 -Verbose -DisableBginfoExtension -AsJob
+
+
+#IIS 설치(VM01, 02)
+Set-AzVMExtension -ResourceGroupName $RgName -Publisher Microsoft.Compute -ExtensionType CustomScriptExtension -ExtensionName IIS -VMName $VM01Name -Location $Location -TypeHandlerVersion 1.8 -SettingString '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}' -AsJob
+Set-AzVMExtension -ResourceGroupName $RgName -Publisher Microsoft.Compute -ExtensionType CustomScriptExtension -ExtensionName IIS -VMName $VM02Name -Location $Location -TypeHandlerVersion 1.8 -SettingString '{"commandToExecute":"powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path \"C:\\inetpub\\wwwroot\\Default.htm\" -Value $($env:computername)"}' -AsJob
+
 az network vnet peering create --name "Hands-On-4-Peering" --remote-vnet $Vnet02Name -g $RgName --vnet-name $Vnet01Name --allow-vnet-access --allow-forwarded-traffic --allow-gateway-transit
 az network vnet peering create --name "Hands-On-4-Peering" --remote-vnet $Vnet01Name -g $RgName --vnet-name $Vnet02Name --allow-vnet-access --allow-forwarded-traffic --use-remote-gateways
 
+#Peering Setting
+Add-AzVirtualNetworkPeering -Name 'Hands-On-4-Peering' -VirtualNetwork $StrVnet01 -RemoteVirtualNetworkId $StrVnet02.Id -AllowForwardedTraffic -AllowGatewayTransit -AsJob
+Add-AzVirtualNetworkPeering -Name 'Hands-On-4-Peering' -VirtualNetwork $StrVnet02 -RemoteVirtualNetworkId $StrVnet01.Id -AllowForwardedTraffic -UseRemoteGateways -AsJob
 
 
-#VGW PIP 확인 및 OnVGW에서 연결 작업
-Vgwip=`az network public-ip show -g $RgName -n $VGWPIP --query [ipAddress] -o tsv`
-OnVgwip=`az network public-ip show -g $OnRgName -n $OnVGWPIP --query [ipAddress] -o tsv`
+#VGW Public IP 확인
+$ipVGWIP = Get-AzPublicIpAddress -Name $VGWPIP -ResourceGroupName $RgName | Select IpAddress | awk 'NR==4'
+$OnipVGWIP = Get-AzPublicIpAddress -Name $OnVGWPIP -ResourceGroupName $OnRgName | Select IpAddress | awk 'NR==4'
 
 
-# local gateway 생성
-# to OnVGW & to VGW
-az network local-gateway create --gateway-ip-address $OnVgwip --name "toOnVGW" -g $RgName --local-address-prefixes 20.0.0.0/8
-az network local-gateway create --gateway-ip-address $Vgwip --name "toVGW" -g $OnRgName --local-address-prefixes 10.0.0.0/8 192.168.0.0/16
+#VGW Public IP 정상 상태인지 확인 후 아래 진행
+echo $ipVGWIP
+echo $OnipVGWIP
+
+#Local Network Gateway 생성
+#$local = New-AzLocalNetworkGateway -Name 'toOnVGW' -ResourceGroupName $RgName -Location $Location -GatewayIpAddress $OnipVGWIP -AddressPrefix "20.0.0.0/8"
+#$Onlocal = New-AzLocalNetworkGateway -Name 'toVGW' -ResourceGroupName $OnRgName -Location $OnLocation -GatewayIpAddress $ipVGWIP -AddressPrefix @('10.0.0.0/8','192.168.0.0/16')
 
 
-VGW 생성 완료 확인 후 진행
-#---------------------------------------------------------------------------------
-
-#VGW에 연결 추가
-#az network vpn-connection create --name "Azure-to-OnPrem" --resource-group $RgName --vnet-gateway1 $VGWName -l $Location --shared-key xptmxm123 --local-gateway2 toOnVGW
-#az network vpn-connection create --name "OnPrem-to-Azure" --resource-group $OnRgName --vnet-gateway1 $OnVGWName -l $OnLocation --shared-key xptmxm123 --local-gateway2 toVGW
-
-
-# On-Prem PIP 확인하여 3389 접속
-az network public-ip show -g $RgName -n $OnVMPIP --query [ipAddress] -o tsv
-
-#VM01=10.1.0.4
-#VM03=192.168.1.20
-
-#VPN 연결된 타 지역 VM에 연결 테스트
+#VGW Connection 추가
+#New-AzVirtualNetworkGatewayConnection -Name 'Azure-to-OnPrem' -ResourceGroupName $RgName -Location $Location -VirtualNetworkGateway1 $strVGW -LocalNetworkGateway2 $local -ConnectionType IPsec -RoutingWeight 10 -SharedKey 'xptmxm123'
+#New-AzVirtualNetworkGatewayConnection -Name 'OnPrem-to-Azure' -ResourceGroupName $OnRgName -Location $OnLocation -VirtualNetworkGateway1 $StrOnVGWPIP -LocalNetworkGateway2 $Onlocal -ConnectionType IPsec -RoutingWeight 10 -SharedKey 'xptmxm123'
