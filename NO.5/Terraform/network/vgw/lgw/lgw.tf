@@ -2,11 +2,12 @@ locals {
 
   set_id = [
     for s in var.lgw: [
-      lookup(var.public_ip, s[5], "")#, lookup(var.subnet_id, s[5], "")
+      lookup(var.public_ip, s[5], "")
     ]
   ]
 
 }
+
 resource "azurerm_local_network_gateway" "tfmodule" {
   count               = length(var.lgw)
   name                = var.lgw[count.index][2]

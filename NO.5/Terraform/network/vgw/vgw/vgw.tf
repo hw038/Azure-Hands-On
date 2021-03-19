@@ -7,14 +7,14 @@ locals {
   ]
 
 }
-# resource "azurerm_public_ip" "tfmodule" {
-#   count               = length(var.vgw)
-#   name                = var.vgw[count.index][5]
-#   location            = var.vgw[count.index][1]
-#   resource_group_name = var.vgw[count.index][0]
-#   #sku                 = "Standard"
-#   allocation_method   = "Dynamic"
-# }
+resource "azurerm_public_ip" "tfmodule" {
+  count               = length(var.vgw)
+  name                = var.vgw[count.index][5]
+  location            = var.vgw[count.index][1]
+  resource_group_name = var.vgw[count.index][0]
+  sku                 = "Basic"
+  allocation_method   = "Dynamic"
+}
 
 resource "azurerm_virtual_network_gateway" "tfmodule" {
   count               = length(var.vgw)
@@ -27,12 +27,13 @@ resource "azurerm_virtual_network_gateway" "tfmodule" {
 
   active_active = false
   enable_bgp    = false
-  sku           = "Basic"
+  sku           = "VpnGw1"
 
   ip_configuration {
     #name                          = var.vgw[count.index][5]
     name                          = "vnetGatewayConfig"
-    public_ip_address_id          = local.set_id[count.index][1]
+    public_ip_address_id          = azurerm_public_ip.tfmodule[count.index].id
+    # public_ip_address_id          = local.set_id[count.index][1]
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = local.set_id[count.index][0]
   }
@@ -41,4 +42,12 @@ resource "azurerm_virtual_network_gateway" "tfmodule" {
     address_space = [var.vgw[count.index][4]]
     
   }
+}
+
+
+data "azurerm_public_ip" "tfmodule" {
+  count               = length(var.vgw)
+  name                = azurerm_public_ip.tfmodule[count.index].name
+  resource_group_name = azurerm_virtual_network_gateway.tfmodule[count.index].resource_group_name
+  depends_on          = [azurerm_virtual_network_gateway.tfmodule]
 }

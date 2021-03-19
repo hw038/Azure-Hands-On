@@ -120,8 +120,8 @@ locals {
 
   vgw_pip = {
     public_ips = [
-      ["VGW-PIP", "B", "D","${module.resource_group.name}","${module.resource_group.location}"],
-      ["VGW-Onprem-PIP", "B", "D","${module.resource_group2.name}","${module.resource_group2.location}"]
+      ["VGW-PIP", "B", "S","${module.resource_group.name}","${module.resource_group.location}"],
+      ["VGW-Onprem-PIP", "B", "S","${module.resource_group2.name}","${module.resource_group2.location}"]
     ],
   }
 
@@ -295,7 +295,7 @@ module "peering" {
   vnet2name = local.vnet2.name
   vnet1id = module.vnet.vnet_id
   vnet2id = module.vnet2.vnet_id
-  depends_on = [ module.vgw, module.vgw_On, module.lgw, module.lgw_On, module.vgw_conn, module.vgw_conn_On ]
+  depends_on = [ module.vgw, module.vgw_On ]
 }
 
 
@@ -352,13 +352,13 @@ module "avset" {
   avset_names = local.avset_names
 }
 
-module "vgw_pip" {
-  source = "./network/pip"
+# module "vgw_pip" {
+#   source = "./network/pip"
 
-  #resource_group_name = module.resource_group.name
-  #location = module.resource_group.location
-  public_ips = local.vgw_pip.public_ips
-}
+#   #resource_group_name = module.resource_group.name
+#   #location = module.resource_group.location
+#   public_ips = local.vgw_pip.public_ips
+# }
 
 module "nic" {
   source = "./network/nic/nic"
@@ -468,14 +468,17 @@ module "routetable" {
 }
 
 
+
+
+
 module "vgw" {
   source = "./network/vgw/vgw"
   resource_group_name = module.resource_group.name
   location = module.resource_group.location
   vgw = local.gateway.vgw
   subnet_id = module.vnet.subnet_id
-  public_id = module.vgw_pip.id
-  depends_on = [ module.nsg_subnet_set,module.vgw_pip ]
+  #public_id = module.vgw_pip.id
+  depends_on = [ module.nsg_subnet_set ]
 
 }
 
@@ -485,8 +488,8 @@ module "vgw_On" {
   location = module.resource_group2.location
   vgw = local.gateway_On.vgw
   subnet_id = module.vnet_On.subnet_id
-  public_id = module.vgw_pip.id
-  depends_on = [ module.nsg_subnet_set_On,module.vgw,module.vgw_pip ]
+  #public_id = module.vgw_pip.id
+  depends_on = [ module.nsg_subnet_set_On ]
 
 }
 
@@ -496,10 +499,8 @@ module "lgw" {
   location = module.resource_group.location
   lgw = local.gateway.lgw
   subnet_id = module.vnet.subnet_id
-  public_ip = module.vgw_pip.pip
-  depends_on = [ module.vgw,module.vgw_On,module.vgw_pip ]
-
-
+  public_ip = module.vgw_On.public_ip_address
+  depends_on = [ module.vgw_On ]
 }
 
 
@@ -509,11 +510,9 @@ module "lgw_On" {
   location = module.resource_group2.location
   lgw = local.gateway_On.lgw
   subnet_id = module.vnet_On.subnet_id
-  public_ip = module.vgw_pip.pip
-  depends_on = [ module.vgw,module.vgw_On,module.vgw_pip ]
-
+  public_ip = module.vgw.public_ip_address
+  depends_on = [ module.vgw ]
 }
-
 
 
 module "vgw_conn" {
@@ -605,9 +604,17 @@ output "nsg_subnet_set_info" {
   value = module.nsg_subnet_set.info
 }
 
-# output "pip_id" {
-#   value = module.pip.id
+# output "pip_name" {
+#   value = module.vgw_pip.name
 # }
+
+output "vgw_pip" {
+  value = module.vgw.public_ip_address
+}
+
+output "vgw_On_pip" {
+  value = module.vgw_On.public_ip_address
+}
 
 output "vnet_name" {
   value = module.vnet.name

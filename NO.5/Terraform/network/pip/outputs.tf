@@ -15,3 +15,4 @@ output "pip" {
         pip.name => pip.ip_address
     }
 }
+
