@@ -15,6 +15,6 @@
 문제2 : LGW에 Gateway address 입력 시 NULL값인 문제
   - 원인 : VGW의 Public IP를 생성한 직후의 pip의 address는 null값이기 때문에 빈값으로 인식하여 에러 발생
   - 테스트 : terraform apply 1회 더 진행하면 LGW 생성 및 VGW connection까지 진행됨(VGW pip의 address가 발급된 이후이기 때문에)
-  - 근본적인 원인 : Public IP가 Basic, Dynamic인 경우 리소스에 할당되어야 address가 발급됨.
-  - 해결 : data source를 통해서 vgw 생성 완료 후 data.public_ip 를 통해 데이터 output하여 
+  - 근본적인 원인 : Public IP가 Dynamic인 경우 리소스에 할당되어야 address가 발급됨.
+  - 해결 : data source를 통해서 vgw 생성 완료 후 data.public_ip 를 통해 데이터 output하여 정상 동작함을 확인
   
