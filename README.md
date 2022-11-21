@@ -34,7 +34,7 @@ Azure의 JumpBox와 Bastion을 사용하여 비교
 ***
 ### [Hands-On No.4](https://github.com/hw038/Azure-Hands-On/tree/main/NO.4)
 ***
-Azure의 Peering 기능 사용하여 파악
+Azure의 Peering
 
 ![image](/img/handson4.png)
 ***
