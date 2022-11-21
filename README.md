@@ -23,21 +23,25 @@ Azure의 External LB를 이용해 이중화 및 NAT 구성
 ### [Hands-On No.2](https://github.com/hw038/Azure-Hands-On/tree/main/NO.2)
 ***
 Azure의 VM Scale Set와 External LB를 이용해 고가용성 및 부하 분산 기능 수행
+
 ![image](/img/handson2.png)
 ***
 ### [Hands-On No.3](https://github.com/hw038/Azure-Hands-On/tree/main/NO.3)
 ***
 Azure의 JumpBox와 Bastion을 사용하여 비교
+
 ![image](/img/handson3.png)
 ***
 ### [Hands-On No.4](https://github.com/hw038/Azure-Hands-On/tree/main/NO.4)
 ***
 Azure의 Peering 기능 사용하여 파악
+
 ![image](/img/handson4.png)
 ***
 ### [Hands-On No.5](https://github.com/hw038/Azure-Hands-On/tree/main/NO.5)
 ***
 Hands-On No.4에서 On-Premise 환경과 연결하기 위한 Azure의 Virtual Network Gateway 설정 및 운용
+
 ![image](/img/handson5.png)
 
 
